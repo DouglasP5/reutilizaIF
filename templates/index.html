@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReutilizaIF</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #fafafa;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            font-size: 3em;
+            font-weight: 300;
+            color: #2c2c2c;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 50px;
+            font-weight: 300;
+        }
+        .description {
+            max-width: 600px;
+            margin: 0 auto 60px;
+            color: #555;
+            font-size: 1.1em;
+            line-height: 1.8;
+            text-align: left;
+        }
+        .description p {
+            margin-bottom: 20px;
+        }
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 14px 40px;
+            text-decoration: none;
+            border: 2px solid #2c2c2c;
+            color: #2c2c2c;
+            background: transparent;
+            font-size: 1em;
+            font-weight: 400;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .btn:hover {
+            background: #2c2c2c;
+            color: #fafafa;
+        }
+        .btn-primary {
+            background: #2c2c2c;
+            color: #fafafa;
+        }
+        .btn-primary:hover {
+            background: #1a1a1a;
+            border-color: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ReutilizaIF</h1>
+        <p class="subtitle">Plataforma de reutilização e compartilhamento de recursos</p>
+        
+        <div class="description">
+            <p>
+                O ReutilizaIF é uma plataforma desenvolvida para promover a sustentabilidade e o consumo consciente 
+                dentro do ambiente acadêmico. Nossa missão é facilitar a reutilização de produtos e materiais, 
+                conectando pessoas que desejam compartilhar recursos e reduzir o desperdício.
+            </p>
+            <p>
+                Através desta plataforma, você pode cadastrar produtos disponíveis para reutilização, encontrar 
+                itens que precisa e contribuir para um ambiente mais sustentável. Juntos, podemos fazer a diferença 
+                e criar uma comunidade mais consciente e responsável.
+            </p>
+        </div>
+        
+        <div class="buttons">
+            <a href="/login" class="btn btn-primary">Login</a>
+            <a href="/cadastro-usuario" class="btn">Cadastrar</a>
+        </div>
+    </div>
+</body>
+</html>

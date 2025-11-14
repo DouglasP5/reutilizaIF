@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Produto - ReutilizaIF</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #fafafa;
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 50px;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 2em;
+            font-weight: 300;
+            color: #2c2c2c;
+            margin-bottom: 40px;
+            text-align: center;
+            letter-spacing: -1px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 400;
+            font-size: 0.9em;
+        }
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+            background: #fafafa;
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #2c2c2c;
+            background: #fff;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #2c2c2c;
+            color: #fafafa;
+            border: none;
+            font-size: 1em;
+            font-weight: 400;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #1a1a1a;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.3s;
+        }
+        .back-link:hover {
+            color: #2c2c2c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cadastrar Novo Produto</h1>
+        <form action="/cadastrar" method="post">
+            <div class="form-group">
+                <label for="nome">Nome</label>
+                <input type="text" name="nome" id="nome" required placeholder="Digite o nome do produto">
+            </div>
+
+            <div class="form-group">
+                <label for="preco">Preço</label>
+                <input type="number" step="0.01" name="preco" id="preco" required placeholder="0.00" min="0">
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea name="descricao" id="descricao" placeholder="Descreva o produto..."></textarea>
+            </div>
+
+            <button type="submit">Cadastrar</button>
+        </form>
+        <a href="/home" class="back-link">Voltar para a home</a>
+    </div>
+</body>
+</html>

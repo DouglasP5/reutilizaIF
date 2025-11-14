@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ReutilizaIF</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #fafafa;
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 50px;
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 2em;
+            font-weight: 300;
+            color: #2c2c2c;
+            margin-bottom: 10px;
+            text-align: center;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 0.95em;
+            font-weight: 300;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 400;
+            font-size: 0.9em;
+        }
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+            background: #fafafa;
+        }
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #2c2c2c;
+            background: #fff;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #2c2c2c;
+            color: #fafafa;
+            border: none;
+            font-size: 1em;
+            font-weight: 400;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #1a1a1a;
+        }
+        .links {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .links a {
+            color: #666;
+            text-decoration: none;
+            display: block;
+            margin-top: 12px;
+            font-size: 0.9em;
+            transition: color 0.3s;
+        }
+        .links a:hover {
+            color: #2c2c2c;
+        }
+        .alert {
+            padding: 12px;
+            margin-bottom: 20px;
+            background: #f5f5f5;
+            color: #666;
+            border-left: 3px solid #2c2c2c;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Login</h1>
+        <p class="subtitle">Acesse sua conta no ReutilizaIF</p>
+        
+        {% if error %}
+        <div class="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        <form action="/login" method="post">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email" required placeholder="seu@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <input type="password" name="senha" id="senha" required placeholder="Digite sua senha">
+            </div>
+
+            <button type="submit">Entrar</button>
+        </form>
+        
+        <div class="links">
+            <a href="/">Voltar para a página inicial</a>
+        </div>
+    </div>
+</body>
+</html>
