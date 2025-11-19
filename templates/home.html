@@ -114,6 +114,20 @@
     <div class="container">
         <header>
             <h1>ReutilizaIF</h1>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                {% if usuario %}
+                <a href="/perfil" class="btn" style="text-decoration: none;">
+                    {% if usuario.foto %}
+                    <img src="{{ usuario.foto }}" alt="Perfil" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #2c2c2c;">
+                    {% else %}
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: #2c2c2c; color: #fafafa; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                        {{ usuario.nome_usual[0] if usuario.nome_usual else usuario.nome[0] if usuario.nome else 'U' }}
+                    </div>
+                    {% endif %}
+                </a>
+                {% endif %}
+                <a href="/logout" class="btn">Sair</a>
+            </div>
         </header>
 
         <h2>Produtos disponíveis</h2>

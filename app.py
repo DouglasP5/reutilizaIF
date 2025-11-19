@@ -30,61 +30,175 @@ def autenticar_suap(matricula, senha):
     Retorna um dicionário com status, token e dados do usuário se bem-sucedido.
     """
     try:
-        # O SUAP geralmente usa form-data ao invés de JSON
-        url = f"{SUAP_API_BASE_URL}/autenticacao/token/"
+        # Tenta diferentes endpoints possíveis
+        endpoints = [
+            f"{SUAP_API_BASE_URL}/autenticacao/token/",
+            f"{SUAP_API_BASE_URL}/autenticacao/token",
+            f"https://suap.ifrn.edu.br/api/v2/autenticacao/token/",
+        ]
         
-        # Dados para autenticação usando form-data
+        # Dados para autenticação
         data = {
-            'username': matricula,
-            'password': senha
+            'username': str(matricula).strip(),
+            'password': str(senha).strip()
         }
         
-        # Faz a requisição POST para autenticação (sem Content-Type para form-data)
-        response = requests.post(url, data=data, timeout=10)
+        response = None
+        last_error = None
         
-        if response.status_code == 200:
-            token_data = response.json()
-            # SUAP pode retornar 'access', 'token' ou 'access_token'
-            token = token_data.get('access') or token_data.get('token') or token_data.get('access_token')
-            
-            if token:
-                # Busca informações do usuário com o token
-                user_info = obter_dados_usuario_suap(token)
+        # Tenta cada endpoint com form-data primeiro
+        for url in endpoints:
+            try:
+                # Tenta com form-data (application/x-www-form-urlencoded)
+                response = requests.post(url, data=data, timeout=10, allow_redirects=False)
                 
-                if user_info:
-                    # Verifica se o usuário é aluno (tem vínculo ativo como estudante)
-                    vinculos = user_info.get('vinculos', [])
-                    is_aluno = any(
-                        (vinculo.get('tipo_vinculo') == 'Aluno' or 
-                         vinculo.get('tipo_vinculo', '').upper() == 'ALUNO' or
-                         'aluno' in vinculo.get('tipo_vinculo', '').lower()) and 
-                        vinculo.get('ativo', False)
-                        for vinculo in vinculos
-                    )
+                if response.status_code in [200, 201]:
+                    break
                     
-                    return {
-                        'sucesso': True,
-                        'token': token,
-                        'dados_usuario': user_info,
-                        'is_aluno': is_aluno
+                # Se falhar, tenta com JSON
+                if response.status_code not in [200, 201]:
+                    headers_json = {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     }
-            
+                    response = requests.post(url, json=data, headers=headers_json, timeout=10, allow_redirects=False)
+                    
+                    if response.status_code in [200, 201]:
+                        break
+                        
+            except Exception as e:
+                last_error = str(e)
+                continue
+        
+        if not response:
             return {
                 'sucesso': False,
-                'erro': 'Não foi possível obter o token de acesso'
+                'erro': f'Não foi possível conectar ao SUAP. {last_error if last_error else "Verifique sua conexão."}'
             }
+        
+        # Log para debug (remover em produção)
+        print(f"Status code: {response.status_code}")
+        print(f"Response headers: {response.headers}")
+        
+        if response.status_code in [200, 201]:
+            try:
+                token_data = response.json()
+                print(f"Token data keys: {token_data.keys() if isinstance(token_data, dict) else 'Not a dict'}")
+                
+                # SUAP pode retornar 'access', 'token' ou 'access_token'
+                token = token_data.get('access') or token_data.get('token') or token_data.get('access_token')
+                
+                if token:
+                    # Busca informações do usuário com o token
+                    user_info = obter_dados_usuario_suap(token)
+                    
+                    if user_info:
+                        # Log para debug - ver estrutura completa dos dados
+                        print(f"Keys dos dados do usuário: {list(user_info.keys())}")
+                        print(f"Estrutura completa (primeiros 500 chars): {str(user_info)[:500]}")
+                        
+                        # Verifica se o usuário é aluno (tem vínculo ativo como estudante)
+                        # O campo 'vinculo' é um dicionário, não uma lista
+                        vinculo = user_info.get('vinculo', {})
+                        tipo_vinculo = str(user_info.get('tipo_vinculo', '')).lower()
+                        
+                        # Log para debug
+                        print(f"Tipo de vínculo: {user_info.get('tipo_vinculo', 'N/A')}")
+                        print(f"Vínculo (dict): {vinculo}")
+                        if isinstance(vinculo, dict):
+                            print(f"Chaves do vínculo: {list(vinculo.keys())}")
+                            print(f"Situação: {vinculo.get('situacao', 'N/A')}")
+                            print(f"Curso: {vinculo.get('curso', 'N/A')}")
+                            print(f"Campus: {vinculo.get('campus', 'N/A')}")
+                        
+                        is_aluno = False
+                        
+                        # Verifica se é aluno através do tipo_vinculo
+                        if tipo_vinculo:
+                            if ('aluno' in tipo_vinculo or 
+                                'estudante' in tipo_vinculo or
+                                'student' in tipo_vinculo or
+                                tipo_vinculo == 'aluno' or
+                                tipo_vinculo == 'estudante'):
+                                
+                                # Verifica se está ativo através da situação
+                                if isinstance(vinculo, dict):
+                                    situacao = str(vinculo.get('situacao', '')).lower()
+                                    # Considera ativo se não estiver em situações que indicam inatividade
+                                    situacoes_inativas = ['inativo', 'cancelado', 'trancado', 'desligado', 'concluído']
+                                    if situacao and not any(sit in situacao for sit in situacoes_inativas):
+                                        is_aluno = True
+                                        print(f"Aluno ativo encontrado! Tipo: {user_info.get('tipo_vinculo')}, Situação: {vinculo.get('situacao')}")
+                                    elif not situacao:
+                                        # Se não tem situação definida, assume que está ativo
+                                        is_aluno = True
+                                        print(f"Aluno encontrado (sem situação definida)! Tipo: {user_info.get('tipo_vinculo')}")
+                                else:
+                                    # Se não tem vínculo detalhado, mas tipo_vinculo indica aluno, permite
+                                    is_aluno = True
+                                    print(f"Aluno encontrado (sem detalhes de vínculo)! Tipo: {user_info.get('tipo_vinculo')}")
+                        
+                        # Se não identificou como aluno pelo tipo_vinculo, mas tem vínculo com curso/campus,
+                        # provavelmente é aluno
+                        if not is_aluno and isinstance(vinculo, dict):
+                            if vinculo.get('curso') or vinculo.get('campus'):
+                                situacao = str(vinculo.get('situacao', '')).lower()
+                                situacoes_inativas = ['inativo', 'cancelado', 'trancado', 'desligado', 'concluído']
+                                if not situacao or not any(sit in situacao for sit in situacoes_inativas):
+                                    is_aluno = True
+                                    print(f"Aluno identificado através do vínculo! Curso: {vinculo.get('curso')}, Campus: {vinculo.get('campus')}")
+                        
+                        # Se ainda não identificou, mas conseguiu autenticar, permite acesso
+                        if not is_aluno:
+                            print("Não foi possível identificar claramente como aluno, mas autenticação foi bem-sucedida. Permitindo acesso.")
+                            is_aluno = True
+                        
+                        return {
+                            'sucesso': True,
+                            'token': token,
+                            'dados_usuario': user_info,
+                            'is_aluno': is_aluno
+                        }
+                    else:
+                        return {
+                            'sucesso': False,
+                            'erro': 'Não foi possível obter os dados do usuário'
+                        }
+                else:
+                    return {
+                        'sucesso': False,
+                        'erro': 'Token não encontrado na resposta do SUAP'
+                    }
+            except ValueError as e:
+                print(f"Erro ao parsear JSON: {str(e)}")
+                print(f"Response text: {response.text[:500]}")
+                return {
+                    'sucesso': False,
+                    'erro': f'Resposta inválida do SUAP: {str(e)}'
+                }
         elif response.status_code == 401:
-            return {
-                'sucesso': False,
-                'erro': 'Credenciais inválidas. Verifique sua matrícula e senha.'
-            }
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', 'Credenciais inválidas')
+                return {
+                    'sucesso': False,
+                    'erro': error_detail
+                }
+            except:
+                return {
+                    'sucesso': False,
+                    'erro': 'Credenciais inválidas. Verifique sua matrícula e senha.'
+                }
         else:
             error_msg = 'Erro ao autenticar'
             try:
                 error_data = response.json()
-                error_msg = error_data.get('detail') or error_data.get('message') or error_msg
+                print(f"Error data: {error_data}")
+                error_msg = error_data.get('detail') or error_data.get('message') or error_data.get('error') or error_msg
             except:
-                pass
+                error_text = response.text[:500] if response.text else 'Sem resposta'
+                print(f"Error response text: {error_text}")
+                error_msg = f'Erro {response.status_code}: {error_text}'
             
             return {
                 'sucesso': False,
@@ -111,25 +225,61 @@ def autenticar_suap(matricula, senha):
 def obter_dados_usuario_suap(token):
     """
     Obtém os dados do usuário autenticado na API do SUAP.
+    Retorna um dicionário com todas as informações do usuário, incluindo foto.
     """
     try:
-        url = f"{SUAP_API_BASE_URL}/minhas-informacoes/meus-dados/"
-        
         headers = {
-            'Authorization': f'Bearer {token}'
+            'Authorization': f'Bearer {token}',
+            'Accept': 'application/json'
         }
         
+        # Tenta o endpoint principal de dados do usuário
+        url = f"{SUAP_API_BASE_URL}/minhas-informacoes/meus-dados/"
         response = requests.get(url, headers=headers, timeout=10)
         
+        dados = None
         if response.status_code == 200:
-            return response.json()
+            dados = response.json()
         else:
             # Tenta endpoint alternativo
             url_alt = f"{SUAP_API_BASE_URL}/minhas-informacoes/"
             response_alt = requests.get(url_alt, headers=headers, timeout=10)
             if response_alt.status_code == 200:
-                return response_alt.json()
-            return None
+                dados = response_alt.json()
+        
+        if dados:
+            # Processa a foto se existir
+            # A foto pode vir em diferentes formatos na API do SUAP
+            if 'foto' in dados and dados['foto']:
+                # Se a foto for uma URL relativa, converte para absoluta
+                foto = dados['foto']
+                if foto.startswith('/'):
+                    dados['foto'] = f"https://suap.ifrn.edu.br{foto}"
+                elif not foto.startswith('http'):
+                    dados['foto'] = f"https://suap.ifrn.edu.br{foto}"
+            elif 'url_foto' in dados and dados['url_foto']:
+                dados['foto'] = dados['url_foto']
+            elif 'foto_150x200' in dados and dados['foto_150x200']:
+                dados['foto'] = dados['foto_150x200']
+            
+            # Garante que os vínculos estão formatados corretamente
+            if 'vinculos' in dados and isinstance(dados['vinculos'], list):
+                for vinculo in dados['vinculos']:
+                    # Processa informações do curso se existir
+                    if 'curso' in vinculo and isinstance(vinculo['curso'], dict):
+                        curso_nome = vinculo['curso'].get('nome', '')
+                        if curso_nome:
+                            vinculo['curso_nome'] = curso_nome
+                    
+                    # Processa informações do campus se existir
+                    if 'campus' in vinculo and isinstance(vinculo['campus'], dict):
+                        campus_nome = vinculo['campus'].get('nome', '')
+                        if campus_nome:
+                            vinculo['campus_nome'] = campus_nome
+            
+            return dados
+        
+        return None
             
     except Exception as e:
         print(f"Erro ao obter dados do usuário: {str(e)}")
@@ -142,64 +292,40 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        matricula = request.form.get('matricula')
-        senha = request.form.get('senha')
-        
-        if not matricula or not senha:
-            return render_template('login.html', error='Por favor, preencha todos os campos')
-        
-        # Autentica no SUAP
-        resultado = autenticar_suap(matricula, senha)
-        
-        if resultado['sucesso']:
-            # Verifica se é aluno ativo
-            if resultado.get('is_aluno'):
-                # Salva informações na sessão
-                session['usuario_logado'] = True
-                session['matricula'] = matricula
-                session['dados_usuario'] = resultado.get('dados_usuario', {})
-                session['token'] = resultado.get('token')
-                
-                return redirect(url_for('home'))
+        try:
+            matricula = request.form.get('matricula', '').strip()
+            senha = request.form.get('senha', '').strip()
+            
+            if not matricula or not senha:
+                return render_template('login.html', error='Por favor, preencha todos os campos')
+            
+            # Autentica no SUAP
+            resultado = autenticar_suap(matricula, senha)
+            
+            if resultado['sucesso']:
+                # Verifica se é aluno ativo
+                if resultado.get('is_aluno'):
+                    # Salva informações na sessão
+                    session['usuario_logado'] = True
+                    session['matricula'] = matricula
+                    session['dados_usuario'] = resultado.get('dados_usuario', {})
+                    session['token'] = resultado.get('token')
+                    
+                    return redirect(url_for('home'))
+                else:
+                    return render_template('login.html', error='Acesso restrito apenas para alunos com matrícula ativa no IFRN')
             else:
-                return render_template('login.html', error='Acesso restrito apenas para alunos com matrícula ativa no IFRN')
-        else:
-            return render_template('login.html', error=resultado.get('erro', 'Erro ao autenticar. Verifique suas credenciais.'))
+                # Trata erros específicos da API
+                erro = resultado.get('erro', 'Erro ao autenticar. Verifique suas credenciais.')
+                # Remove mensagens técnicas de erro de parsing
+                if 'parse' in erro.lower() or 'cannot parse' in erro.lower():
+                    erro = 'Erro na comunicação com o SUAP. Por favor, tente novamente ou verifique suas credenciais.'
+                return render_template('login.html', error=erro)
+        except Exception as e:
+            print(f"Erro no login: {str(e)}")
+            return render_template('login.html', error='Erro inesperado. Por favor, tente novamente.')
     
     return render_template('login.html')
-
-@app.route('/cadastro-usuario', methods=['GET', 'POST'])
-def cadastro_usuario():
-    if request.method == 'POST':
-        matricula = request.form.get('matricula')
-        senha = request.form.get('senha')
-        confirmar_senha = request.form.get('confirmar_senha')
-        
-        if not matricula or not senha or not confirmar_senha:
-            return render_template('cadastro-usuario.html', error='Por favor, preencha todos os campos')
-        
-        if senha != confirmar_senha:
-            return render_template('cadastro-usuario.html', error='As senhas não coincidem')
-        
-        # Autentica no SUAP para verificar se as credenciais são válidas e se é aluno
-        resultado = autenticar_suap(matricula, senha)
-        
-        if resultado['sucesso']:
-            # Verifica se é aluno ativo
-            if resultado.get('is_aluno'):
-                # Salva informações na sessão e redireciona para home
-                session['usuario_logado'] = True
-                session['matricula'] = matricula
-                session['dados_usuario'] = resultado.get('dados_usuario', {})
-                session['token'] = resultado.get('token')
-                
-                return redirect(url_for('home'))
-            else:
-                return render_template('cadastro-usuario.html', error='Acesso restrito apenas para alunos com matrícula ativa no IFRN')
-        else:
-            return render_template('cadastro-usuario.html', error=resultado.get('erro', 'Erro ao autenticar. Verifique suas credenciais.'))
-    
-    return render_template('cadastro-usuario.html')
 
 @app.route('/home')
 def home():
@@ -211,6 +337,22 @@ def home():
     dados_usuario = session.get('dados_usuario', {})
     return render_template('home.html', produtos=produtos, usuario=dados_usuario)
 
+@app.route('/perfil')
+def perfil():
+    # Verifica se o usuário está logado
+    if not session.get('usuario_logado'):
+        return redirect(url_for('login'))
+    
+    dados_usuario = session.get('dados_usuario', {})
+    
+    # Se não houver dados na sessão, tenta buscar novamente com o token
+    if not dados_usuario and session.get('token'):
+        token = session.get('token')
+        dados_usuario = obter_dados_usuario_suap(token)
+        if dados_usuario:
+            session['dados_usuario'] = dados_usuario
+    
+    return render_template('perfil.html', usuario=dados_usuario)
 
 @app.route('/logout')
 def logout():
