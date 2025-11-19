@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if acao == 'editar' %}Editar{% else %}Novo{% endif %} Produto - ReutilizaIF</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f7f7f7;
+            color: #2c2c2c;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.08);
+        }
+        h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #dfe3e6;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border 0.2s ease;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #00FF88;
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.2);
+        }
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .btn {
+            flex: 1;
+            text-align: center;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s;
+        }
+        .btn-primary {
+            background: #00FF88;
+            color: #000;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,255,136,0.3);
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        .alert {
+            background: #ffe9e9;
+            color: #9f1c1c;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            border-left: 4px solid #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>{% if acao == 'editar' %}Editar Produto{% else %}Novo Produto{% endif %}</h1>
+
+        {% if error %}
+        <div class="alert">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            <div class="form-group">
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" name="nome" required value="{{ produto.nome if produto else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="preco">Preço</label>
+                <input type="text" id="preco" name="preco" required value="{{ '%.2f' % produto.preco if produto else '' }}" placeholder="Ex: 99.90">
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea id="descricao" name="descricao" placeholder="Detalhes do produto">{{ produto.descricao if produto else '' }}</textarea>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">
+                    {% if acao == 'editar' %}Salvar Alterações{% else %}Cadastrar{% endif %}
+                </button>
+                <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+

@@ -48,6 +48,36 @@
             cursor: pointer;
             display: inline-block;
         }
+        .btn-admin {
+            border-color: #00FF88;
+            color: #00b766;
+        }
+        .btn-admin:hover {
+            background: #00FF88;
+            color: #000;
+            border-color: #00FF88;
+        }
+        .produto-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        .produto-actions form {
+            margin: 0;
+        }
+        .btn-small {
+            padding: 10px 18px;
+            font-size: 0.85em;
+        }
+        .btn-danger {
+            border-color: #ff5a5a;
+            color: #ff5a5a;
+        }
+        .btn-danger:hover {
+            background: #ff5a5a;
+            color: #fff;
+            border-color: #ff5a5a;
+        }
         .btn:hover {
             background: #2c2c2c;
             color: #fafafa;
@@ -100,6 +130,19 @@
             line-height: 1.7;
             font-size: 0.95em;
         }
+        .produto-meta {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .produto-meta a {
+            color: #2c2c2c;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .produto-meta a:hover {
+            text-decoration: underline;
+        }
         .empty-state {
             text-align: center;
             padding: 80px 20px;
@@ -115,6 +158,9 @@
         <header>
             <h1>ReutilizaIF</h1>
             <div style="display: flex; gap: 15px; align-items: center;">
+                {% if pode_criar %}
+                <a href="{{ url_for('novo_produto') }}" class="btn btn-admin">Adicionar produto</a>
+                {% endif %}
                 {% if usuario %}
                 <a href="/perfil" class="btn" style="text-decoration: none;">
                     {% if usuario.foto %}
@@ -138,6 +184,22 @@
                         <strong>{{ produto.nome }}</strong>
                         <div class="preco">R$ {{ "%.2f" % produto.preco }}</div>
                         <div class="descricao">{{ produto.descricao }}</div>
+                        {% if produto.usuario_matricula %}
+                        <div class="produto-meta">
+                            Publicado por
+                            <a href="{{ url_for('usuario_publico', matricula=produto.usuario_matricula) }}">
+                                {{ produto.usuario_nome or produto.usuario_matricula }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% if is_admin %}
+                        <div class="produto-actions">
+                            <a href="{{ url_for('editar_produto', produto_id=produto.id) }}" class="btn btn-small">Editar</a>
+                            <form action="{{ url_for('excluir_produto', produto_id=produto.id) }}" method="post" onsubmit="return confirm('Tem certeza que deseja remover este produto?');">
+                                <button type="submit" class="btn btn-small btn-danger">Remover</button>
+                            </form>
+                        </div>
+                        {% endif %}
                     </div>
                 {% endfor %}
             </div>

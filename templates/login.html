@@ -37,10 +37,10 @@
         }
         .green-shape {
             position: absolute;
-            top: -50px;
-            left: -50px;
-            width: 400px;
-            height: 400px;
+            top: -200px;
+            left: -200px;
+            width: 600px;
+            height: 600px;
             background: #00FF88;
             border-radius: 50%;
             opacity: 0.9;
@@ -72,7 +72,6 @@
             font-size: 0.9em;
             color: #000;
             margin-top: 5px;
-            margin-left: 60px;
         }
         .campus-logo {
             position: absolute;
@@ -83,8 +82,8 @@
             gap: 15px;
         }
         .campus-logo-img {
-            width: 40px;
-            height: 40px;
+            width: 200px;
+            height: 200px;
             object-fit: contain;
         }
         .campus-text {
@@ -159,18 +158,6 @@
             align-items: center;
             justify-content: center;
         }
-        .forgot-password {
-            margin-top: 8px;
-            margin-bottom: 30px;
-        }
-        .forgot-password a {
-            color: #000;
-            text-decoration: none;
-            font-size: 0.9em;
-        }
-        .forgot-password a:hover {
-            text-decoration: underline;
-        }
         .login-button {
             width: 100%;
             padding: 16px;
@@ -218,20 +205,15 @@
         <div class="left-side">
             <div class="green-shape"></div>
             <div class="logo-section">
-                <div class="logo-main">
-                    <img src="{{ url_for('static', filename='img/logo reutilizaIF.jpg') }}" alt="Logo ReutilizaIF" class="logo-icon" onerror="this.onerror=null; this.src='img/logo reutilizaIF.jpg';">
-                    <span class="logo-text">Reutiza IF</span>
-                </div>
-                <div class="logo-subtitle">O CICLO COMEÇA AQUI</div>
+                <div class="logo-subtitle"> REUTILIZAIF O CICLO COMEÇA AQUI</div>
             </div>
             <div class="campus-logo">
                 <img src="{{ url_for('static', filename='img/Campus Natal-Zona Norte - Logo_Color Hor Compl .png') }}" alt="Campus Logo" class="campus-logo-img" onerror="this.onerror=null; this.src='img/Campus Natal-Zona Norte - Logo_Color Hor Compl .png';">
-                <div class="campus-text">INSTITUTO FEDERAL<br>Campus Rio Grande do Norte Natal-Zona Norte</div>
             </div>
         </div>
         
         <div class="right-side">
-            <h1 class="welcome-text">bem vindo de volta!</h1>
+            <h1 class="welcome-text">bem vindo!</h1>
             
             {% if error %}
             <div class="alert">
@@ -251,14 +233,7 @@
                     <label for="senha">Senha</label>
                     <div class="input-wrapper">
                         <input type="password" name="senha" id="senha" required placeholder="Digite sua senha">
-                        <button type="button" class="password-toggle" onclick="togglePassword()">
-                            <span id="eye-icon">👁️</span>
-                        </button>
                     </div>
-                </div>
-
-                <div class="forgot-password">
-                    <a href="#">esqueceu a senha?</a>
                 </div>
 
                 <button type="submit" class="login-button">Login</button>
@@ -273,10 +248,8 @@
             
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
-                eyeIcon.textContent = '🙈';
             } else {
                 passwordInput.type = 'password';
-                eyeIcon.textContent = '👁️';
             }
         }
     </script>

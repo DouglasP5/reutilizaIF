@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import inspect, text
 import requests
 import os
 
@@ -18,19 +19,94 @@ class Produto(db.Model):
     nome = db.Column(db.String(100), nullable=False)
     preco = db.Column(db.Float, nullable=False)
     descricao = db.Column(db.String(200))
+    usuario_matricula = db.Column(db.String(20))
+    usuario_nome = db.Column(db.String(150))
 
 
-# URL base da API do SUAP
+class UsuarioInfo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    matricula = db.Column(db.String(20), unique=True, nullable=False)
+    telefone = db.Column(db.String(30))
+    nome = db.Column(db.String(150))
+    curso = db.Column(db.String(150))
+    campus = db.Column(db.String(150))
+    foto_url = db.Column(db.String(300))
+
+
+#API do SUAP
 SUAP_API_BASE_URL = "https://suap.ifrn.edu.br/api/v2"
+ADMIN_MATRICULAS = {'20231041110013'}
+
+
+def ensure_schema():
+    inspector = inspect(db.engine)
+    tables = inspector.get_table_names()
+
+    def existing_columns(table):
+        if table not in tables:
+            return set()
+        return {col['name'] for col in inspector.get_columns(table)}
+
+    produto_cols = existing_columns('produto')
+    for col_name, ddl in {
+        'usuario_matricula': 'VARCHAR(20)',
+        'usuario_nome': 'VARCHAR(150)'
+    }.items():
+        if col_name not in produto_cols:
+            db.session.execute(text(f'ALTER TABLE produto ADD COLUMN {col_name} {ddl}'))
+            db.session.commit()
+
+    usuario_cols = existing_columns('usuario_info')
+    for col_name, ddl in {
+        'telefone': 'VARCHAR(30)',
+        'nome': 'VARCHAR(150)',
+        'curso': 'VARCHAR(150)',
+        'campus': 'VARCHAR(150)',
+        'foto_url': 'VARCHAR(300)'
+    }.items():
+        if col_name not in usuario_cols:
+            db.session.execute(text(f'ALTER TABLE usuario_info ADD COLUMN {col_name} {ddl}'))
+            db.session.commit()
+
+
+def salvar_info_usuario(matricula, dados_usuario):
+    if not matricula:
+        return
+
+    info = UsuarioInfo.query.filter_by(matricula=matricula).first()
+    if not info:
+        info = UsuarioInfo(matricula=matricula)
+        db.session.add(info)
+
+    info.nome = dados_usuario.get('nome_usual') or dados_usuario.get('nome') or info.nome
+
+    vinculo = dados_usuario.get('vinculo') or {}
+    curso = None
+    campus = None
+    if isinstance(vinculo, dict):
+        curso = vinculo.get('curso')
+        if isinstance(curso, dict):
+            curso = curso.get('nome')
+        campus = vinculo.get('campus')
+        if isinstance(campus, dict):
+            campus = campus.get('nome')
+
+    if curso:
+        info.curso = curso
+    if campus:
+        info.campus = campus
+
+    foto = dados_usuario.get('url_foto_150x200') or dados_usuario.get('url_foto_75x100') or dados_usuario.get('foto')
+    if foto:
+        info.foto_url = foto
+
+    db.session.commit()
 
 
 def autenticar_suap(matricula, senha):
-    """
-    Autentica um usuário na API do SUAP do IFRN.
-    Retorna um dicionário com status, token e dados do usuário se bem-sucedido.
-    """
+    
     try:
-        # Tenta diferentes endpoints possíveis
+    
         endpoints = [
             f"{SUAP_API_BASE_URL}/autenticacao/token/",
             f"{SUAP_API_BASE_URL}/autenticacao/token",
@@ -46,16 +122,13 @@ def autenticar_suap(matricula, senha):
         response = None
         last_error = None
         
-        # Tenta cada endpoint com form-data primeiro
         for url in endpoints:
             try:
-                # Tenta com form-data (application/x-www-form-urlencoded)
                 response = requests.post(url, data=data, timeout=10, allow_redirects=False)
                 
                 if response.status_code in [200, 201]:
                     break
                     
-                # Se falhar, tenta com JSON
                 if response.status_code not in [200, 201]:
                     headers_json = {
                         'Content-Type': 'application/json',
@@ -76,7 +149,6 @@ def autenticar_suap(matricula, senha):
                 'erro': f'Não foi possível conectar ao SUAP. {last_error if last_error else "Verifique sua conexão."}'
             }
         
-        # Log para debug (remover em produção)
         print(f"Status code: {response.status_code}")
         print(f"Response headers: {response.headers}")
         
@@ -85,24 +157,18 @@ def autenticar_suap(matricula, senha):
                 token_data = response.json()
                 print(f"Token data keys: {token_data.keys() if isinstance(token_data, dict) else 'Not a dict'}")
                 
-                # SUAP pode retornar 'access', 'token' ou 'access_token'
                 token = token_data.get('access') or token_data.get('token') or token_data.get('access_token')
                 
                 if token:
-                    # Busca informações do usuário com o token
                     user_info = obter_dados_usuario_suap(token)
                     
                     if user_info:
-                        # Log para debug - ver estrutura completa dos dados
                         print(f"Keys dos dados do usuário: {list(user_info.keys())}")
                         print(f"Estrutura completa (primeiros 500 chars): {str(user_info)[:500]}")
                         
-                        # Verifica se o usuário é aluno (tem vínculo ativo como estudante)
-                        # O campo 'vinculo' é um dicionário, não uma lista
                         vinculo = user_info.get('vinculo', {})
                         tipo_vinculo = str(user_info.get('tipo_vinculo', '')).lower()
                         
-                        # Log para debug
                         print(f"Tipo de vínculo: {user_info.get('tipo_vinculo', 'N/A')}")
                         print(f"Vínculo (dict): {vinculo}")
                         if isinstance(vinculo, dict):
@@ -113,7 +179,6 @@ def autenticar_suap(matricula, senha):
                         
                         is_aluno = False
                         
-                        # Verifica se é aluno através do tipo_vinculo
                         if tipo_vinculo:
                             if ('aluno' in tipo_vinculo or 
                                 'estudante' in tipo_vinculo or
@@ -121,25 +186,19 @@ def autenticar_suap(matricula, senha):
                                 tipo_vinculo == 'aluno' or
                                 tipo_vinculo == 'estudante'):
                                 
-                                # Verifica se está ativo através da situação
                                 if isinstance(vinculo, dict):
                                     situacao = str(vinculo.get('situacao', '')).lower()
-                                    # Considera ativo se não estiver em situações que indicam inatividade
                                     situacoes_inativas = ['inativo', 'cancelado', 'trancado', 'desligado', 'concluído']
                                     if situacao and not any(sit in situacao for sit in situacoes_inativas):
                                         is_aluno = True
                                         print(f"Aluno ativo encontrado! Tipo: {user_info.get('tipo_vinculo')}, Situação: {vinculo.get('situacao')}")
                                     elif not situacao:
-                                        # Se não tem situação definida, assume que está ativo
                                         is_aluno = True
                                         print(f"Aluno encontrado (sem situação definida)! Tipo: {user_info.get('tipo_vinculo')}")
                                 else:
-                                    # Se não tem vínculo detalhado, mas tipo_vinculo indica aluno, permite
                                     is_aluno = True
                                     print(f"Aluno encontrado (sem detalhes de vínculo)! Tipo: {user_info.get('tipo_vinculo')}")
                         
-                        # Se não identificou como aluno pelo tipo_vinculo, mas tem vínculo com curso/campus,
-                        # provavelmente é aluno
                         if not is_aluno and isinstance(vinculo, dict):
                             if vinculo.get('curso') or vinculo.get('campus'):
                                 situacao = str(vinculo.get('situacao', '')).lower()
@@ -148,7 +207,6 @@ def autenticar_suap(matricula, senha):
                                     is_aluno = True
                                     print(f"Aluno identificado através do vínculo! Curso: {vinculo.get('curso')}, Campus: {vinculo.get('campus')}")
                         
-                        # Se ainda não identificou, mas conseguiu autenticar, permite acesso
                         if not is_aluno:
                             print("Não foi possível identificar claramente como aluno, mas autenticação foi bem-sucedida. Permitindo acesso.")
                             is_aluno = True
@@ -223,17 +281,12 @@ def autenticar_suap(matricula, senha):
 
 
 def obter_dados_usuario_suap(token):
-    """
-    Obtém os dados do usuário autenticado na API do SUAP.
-    Retorna um dicionário com todas as informações do usuário, incluindo foto.
-    """
     try:
         headers = {
             'Authorization': f'Bearer {token}',
             'Accept': 'application/json'
         }
         
-        # Tenta o endpoint principal de dados do usuário
         url = f"{SUAP_API_BASE_URL}/minhas-informacoes/meus-dados/"
         response = requests.get(url, headers=headers, timeout=10)
         
@@ -241,17 +294,13 @@ def obter_dados_usuario_suap(token):
         if response.status_code == 200:
             dados = response.json()
         else:
-            # Tenta endpoint alternativo
             url_alt = f"{SUAP_API_BASE_URL}/minhas-informacoes/"
             response_alt = requests.get(url_alt, headers=headers, timeout=10)
             if response_alt.status_code == 200:
                 dados = response_alt.json()
         
         if dados:
-            # Processa a foto se existir
-            # A foto pode vir em diferentes formatos na API do SUAP
             if 'foto' in dados and dados['foto']:
-                # Se a foto for uma URL relativa, converte para absoluta
                 foto = dados['foto']
                 if foto.startswith('/'):
                     dados['foto'] = f"https://suap.ifrn.edu.br{foto}"
@@ -262,16 +311,13 @@ def obter_dados_usuario_suap(token):
             elif 'foto_150x200' in dados and dados['foto_150x200']:
                 dados['foto'] = dados['foto_150x200']
             
-            # Garante que os vínculos estão formatados corretamente
             if 'vinculos' in dados and isinstance(dados['vinculos'], list):
                 for vinculo in dados['vinculos']:
-                    # Processa informações do curso se existir
                     if 'curso' in vinculo and isinstance(vinculo['curso'], dict):
                         curso_nome = vinculo['curso'].get('nome', '')
                         if curso_nome:
                             vinculo['curso_nome'] = curso_nome
                     
-                    # Processa informações do campus se existir
                     if 'campus' in vinculo and isinstance(vinculo['campus'], dict):
                         campus_nome = vinculo['campus'].get('nome', '')
                         if campus_nome:
@@ -289,6 +335,11 @@ def obter_dados_usuario_suap(token):
 def index():
     return render_template('index.html')
 
+
+def usuario_e_admin():
+    return session.get('matricula') in ADMIN_MATRICULAS
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -299,25 +350,22 @@ def login():
             if not matricula or not senha:
                 return render_template('login.html', error='Por favor, preencha todos os campos')
             
-            # Autentica no SUAP
             resultado = autenticar_suap(matricula, senha)
             
             if resultado['sucesso']:
-                # Verifica se é aluno ativo
                 if resultado.get('is_aluno'):
-                    # Salva informações na sessão
                     session['usuario_logado'] = True
                     session['matricula'] = matricula
                     session['dados_usuario'] = resultado.get('dados_usuario', {})
                     session['token'] = resultado.get('token')
+
+                    salvar_info_usuario(matricula, session['dados_usuario'])
                     
                     return redirect(url_for('home'))
                 else:
                     return render_template('login.html', error='Acesso restrito apenas para alunos com matrícula ativa no IFRN')
             else:
-                # Trata erros específicos da API
                 erro = resultado.get('erro', 'Erro ao autenticar. Verifique suas credenciais.')
-                # Remove mensagens técnicas de erro de parsing
                 if 'parse' in erro.lower() or 'cannot parse' in erro.lower():
                     erro = 'Erro na comunicação com o SUAP. Por favor, tente novamente ou verifique suas credenciais.'
                 return render_template('login.html', error=erro)
@@ -329,30 +377,158 @@ def login():
 
 @app.route('/home')
 def home():
-    # Verifica se o usuário está logado
     if not session.get('usuario_logado'):
         return redirect(url_for('login'))
     
     produtos = Produto.query.all()
     dados_usuario = session.get('dados_usuario', {})
-    return render_template('home.html', produtos=produtos, usuario=dados_usuario)
+    return render_template(
+        'home.html',
+        produtos=produtos,
+        usuario=dados_usuario,
+        is_admin=usuario_e_admin(),
+        pode_criar=session.get('usuario_logado', False)
+    )
 
-@app.route('/perfil')
+
+@app.route('/produtos/novo', methods=['GET', 'POST'])
+def novo_produto():
+    if not session.get('usuario_logado'):
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+        preco = request.form.get('preco', '').strip()
+        descricao = request.form.get('descricao', '').strip()
+
+        if not nome or not preco:
+            return render_template('produto_form.html', error='Informe nome e preço.', produto=None, acao='novo')
+
+        try:
+            preco_valor = float(str(preco).replace(',', '.'))
+        except ValueError:
+            return render_template('produto_form.html', error='Preço inválido. Use somente números.', produto=None, acao='novo')
+
+        dados_usuario = session.get('dados_usuario', {})
+        nome_usuario = dados_usuario.get('nome_usual') or dados_usuario.get('nome') or 'Usuário'
+        matricula_usuario = session.get('matricula')
+
+        produto = Produto(
+            nome=nome,
+            preco=preco_valor,
+            descricao=descricao,
+            usuario_nome=nome_usuario,
+            usuario_matricula=matricula_usuario
+        )
+        db.session.add(produto)
+        db.session.commit()
+        return redirect(url_for('home'))
+
+    return render_template('produto_form.html', produto=None, acao='novo')
+
+
+@app.route('/produtos/<int:produto_id>/editar', methods=['GET', 'POST'])
+def editar_produto(produto_id):
+    if not session.get('usuario_logado'):
+        return redirect(url_for('login'))
+    if not usuario_e_admin():
+        return redirect(url_for('home'))
+
+    produto = Produto.query.get_or_404(produto_id)
+
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+        preco = request.form.get('preco', '').strip()
+        descricao = request.form.get('descricao', '').strip()
+
+        if not nome or not preco:
+            return render_template('produto_form.html', error='Informe nome e preço.', produto=produto, acao='editar')
+
+        try:
+            preco_valor = float(str(preco).replace(',', '.'))
+        except ValueError:
+            return render_template('produto_form.html', error='Preço inválido. Use somente números.', produto=produto, acao='editar')
+
+        produto.nome = nome
+        produto.preco = preco_valor
+        produto.descricao = descricao
+        db.session.commit()
+        return redirect(url_for('home'))
+
+    return render_template('produto_form.html', produto=produto, acao='editar')
+
+
+@app.route('/produtos/<int:produto_id>/excluir', methods=['POST'])
+def excluir_produto(produto_id):
+    if not session.get('usuario_logado'):
+        return redirect(url_for('login'))
+    if not usuario_e_admin():
+        return redirect(url_for('home'))
+
+    produto = Produto.query.get_or_404(produto_id)
+    db.session.delete(produto)
+    db.session.commit()
+    return redirect(url_for('home'))
+
+@app.route('/perfil', methods=['GET', 'POST'])
 def perfil():
-    # Verifica se o usuário está logado
     if not session.get('usuario_logado'):
         return redirect(url_for('login'))
     
     dados_usuario = session.get('dados_usuario', {})
+    matricula = session.get('matricula')
+    info = UsuarioInfo.query.filter_by(matricula=matricula).first()
     
-    # Se não houver dados na sessão, tenta buscar novamente com o token
+    if request.method == 'POST':
+        telefone = request.form.get('telefone', '').strip()
+        if not info:
+            info = UsuarioInfo(matricula=matricula)
+            db.session.add(info)
+        info.telefone = telefone or None
+        db.session.commit()
+        return redirect(url_for('perfil'))
+
     if not dados_usuario and session.get('token'):
         token = session.get('token')
         dados_usuario = obter_dados_usuario_suap(token)
         if dados_usuario:
             session['dados_usuario'] = dados_usuario
     
-    return render_template('perfil.html', usuario=dados_usuario)
+    telefone = info.telefone if info else ''
+    return render_template('perfil.html', usuario=dados_usuario, telefone=telefone)
+
+
+@app.route('/usuarios/<matricula>')
+def usuario_publico(matricula):
+    if not session.get('usuario_logado'):
+        return redirect(url_for('login'))
+
+    info = UsuarioInfo.query.filter_by(matricula=matricula).first()
+    produtos = Produto.query.filter_by(usuario_matricula=matricula).all()
+
+    if not info and not produtos:
+        return render_template('usuario_publico.html', encontrado=False, matricula=matricula)
+
+    nome = None
+    if info and info.nome:
+        nome = info.nome
+    elif produtos:
+        nome = produtos[0].usuario_nome
+
+    return render_template(
+        'usuario_publico.html',
+        encontrado=True,
+        matricula=matricula,
+        info=info,
+        produtos=produtos,
+        nome=nome or matricula
+    )
+
+@app.before_first_request
+def inicializar():
+    db.create_all()
+    ensure_schema()
+
 
 @app.route('/logout')
 def logout():
@@ -362,6 +538,5 @@ def logout():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        ensure_schema()
     app.run(debug=True)
-
-

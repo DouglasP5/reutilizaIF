@@ -185,6 +185,31 @@
             background: #ccc;
             color: #666;
         }
+        .phone-form {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .phone-form input {
+            flex: 1;
+            padding: 14px 16px;
+            border-radius: 8px;
+            border: 1px solid #dfe3e6;
+            font-size: 1em;
+        }
+        .phone-form button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #00FF88;
+            color: #000;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .phone-form button:hover {
+            background: #00cc6a;
+        }
         .empty-state {
             text-align: center;
             padding: 40px;
@@ -274,6 +299,11 @@
                         {% endif %}
                     {% endif %}
                 </div>
+
+                <form method="post" class="phone-form">
+                    <input type="text" name="telefone" placeholder="Digite seu telefone" value="{{ telefone if telefone else '' }}">
+                    <button type="submit">Salvar telefone</button>
+                </form>
             </div>
         </div>
         {% else %}
