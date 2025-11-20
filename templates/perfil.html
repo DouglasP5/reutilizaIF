@@ -242,7 +242,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Meu Perfil</h1>
+            <h1>{% if usuario and (session.matricula and session.matricula == (usuario.matricula if usuario.matricula else None)) %}Meu Perfil{% elif usuario and usuario.nome %}Perfil de {{ usuario.nome }}{% else %}Perfil{% endif %}</h1>
             <div class="nav-buttons">
                 <a href="/home" class="btn btn-secondary">Voltar</a>
                 <a href="/logout" class="btn btn-primary">Sair</a>
@@ -268,7 +268,7 @@
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="info-label">Matrícula</div>
-                        <div class="info-value">{{ session.matricula if session.matricula else usuario.matricula if usuario.matricula else 'N/A' }}</div>
+                            <div class="info-value">{{ usuario.matricula if usuario.matricula else session.matricula if session.matricula else 'N/A' }}</div>
                     </div>
                     {% if usuario.vinculo %}
                         {% if usuario.vinculo.curso %}
@@ -300,10 +300,12 @@
                     {% endif %}
                 </div>
 
+                {% if (session.matricula and usuario and session.matricula == usuario.matricula) or is_admin %}
                 <form method="post" class="phone-form">
                     <input type="text" name="telefone" placeholder="Digite seu telefone" value="{{ telefone if telefone else '' }}">
                     <button type="submit">Salvar telefone</button>
                 </form>
+                {% endif %}
             </div>
         </div>
         {% else %}

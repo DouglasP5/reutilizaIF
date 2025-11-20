@@ -495,33 +495,61 @@ def perfil():
             session['dados_usuario'] = dados_usuario
     
     telefone = info.telefone if info else ''
-    return render_template('perfil.html', usuario=dados_usuario, telefone=telefone)
+    return render_template('perfil.html', usuario=dados_usuario, telefone=telefone, is_admin=usuario_e_admin())
 
 
-@app.route('/usuarios/<matricula>')
+@app.route('/usuarios/<matricula>', methods=['GET', 'POST'])
 def usuario_publico(matricula):
     if not session.get('usuario_logado'):
         return redirect(url_for('login'))
+
+    # Permite que apenas admins alterem telefone via esta rota (o usuário pode alterar seu próprio telefone em /perfil)
+    if request.method == 'POST':
+        if not usuario_e_admin():
+            return redirect(url_for('usuario_publico', matricula=matricula))
+        telefone = request.form.get('telefone', '').strip() or None
+        info = UsuarioInfo.query.filter_by(matricula=matricula).first()
+        if not info:
+            info = UsuarioInfo(matricula=matricula)
+            db.session.add(info)
+        info.telefone = telefone
+        db.session.commit()
+        return redirect(url_for('usuario_publico', matricula=matricula))
 
     info = UsuarioInfo.query.filter_by(matricula=matricula).first()
     produtos = Produto.query.filter_by(usuario_matricula=matricula).all()
 
     if not info and not produtos:
-        return render_template('usuario_publico.html', encontrado=False, matricula=matricula)
+        # Reaproveita template de perfil para mostrar que usuário não foi encontrado
+        return render_template('perfil.html', usuario=None, telefone='', is_admin=usuario_e_admin())
 
-    nome = None
-    if info and info.nome:
-        nome = info.nome
-    elif produtos:
-        nome = produtos[0].usuario_nome
+    # Construir um objeto 'usuario' similar ao esperado pelo template `perfil.html`
+    usuario = {}
+    if info:
+        usuario['matricula'] = info.matricula
+        usuario['nome'] = info.nome
+        usuario['foto'] = info.foto_url
+        # popular campos compatíveis com os checks do template
+        usuario['url_foto_150x200'] = info.foto_url
+        usuario['url_foto_75x100'] = info.foto_url
+        # Simples vinculo para exibir curso/campus
+        usuario['vinculo'] = {
+            'curso': {'nome': info.curso} if info.curso else None,
+            'campus': {'nome': info.campus} if info.campus else None
+        }
+    else:
+        # tentar inferir nome a partir dos produtos
+        nome = produtos[0].usuario_nome if produtos else matricula
+        usuario['matricula'] = matricula
+        usuario['nome'] = nome
+
+    telefone = info.telefone if info else ''
 
     return render_template(
-        'usuario_publico.html',
-        encontrado=True,
-        matricula=matricula,
-        info=info,
-        produtos=produtos,
-        nome=nome or matricula
+        'perfil.html',
+        usuario=usuario,
+        telefone=telefone,
+        is_admin=usuario_e_admin()
     )
 
 # Compatibilidade com Flask 2.x e 3.x: mapeia o decorator de startup correto
