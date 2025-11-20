@@ -524,7 +524,17 @@ def usuario_publico(matricula):
         nome=nome or matricula
     )
 
-@app.before_first_request
+# Compatibilidade com Flask 2.x e 3.x: mapeia o decorator de startup correto
+if hasattr(app, 'before_serving'):
+    before_start = app.before_serving
+elif hasattr(app, 'before_first_request'):
+    before_start = app.before_first_request
+else:
+    def before_start(f):
+        return f
+
+
+@before_start
 def inicializar():
     db.create_all()
     ensure_schema()
