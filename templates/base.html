@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ReutilizaIF{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/icon.svg') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #fafafa;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-brand {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #000;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.3s ease;
+        }
+        .nav-brand:hover {
+            transform: scale(1.05);
+        }
+        .nav-brand-logo {
+            height: 30px;
+            width: auto;
+            object-fit: contain;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .nav-link {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .nav-link i {
+            font-size: 1.1em;
+        }
+        .nav-link span {
+            display: inline-block;
+        }
+        .nav-link:hover {
+            color: #00FF88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+        .nav-link-active {
+            color: #00FF88 !important;
+            background: rgba(0, 255, 136, 0.15) !important;
+            font-weight: 600;
+        }
+        .nav-link-active i,
+        .nav-link-active span {
+            color: #00FF88 !important;
+        }
+        .btn i {
+            margin-right: 4px;
+        }
+        .btn {
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #00FF88;
+            color: #000;
+        }
+        .btn-primary:hover {
+            background: #00CC6A;
+        }
+        .btn-secondary {
+            background: transparent;
+            color: #000;
+            border: 2px solid #000;
+        }
+        .btn-secondary:hover {
+            background: #000;
+            color: #fff;
+        }
+        .btn-danger {
+            background: #ff5a5a;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #ff3a3a;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .content {
+            min-height: calc(100vh - 200px);
+        }
+        .alert {
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .alert-error {
+            background: #ffe9e9;
+            color: #9f1c1c;
+            border-left: 4px solid #ff6b6b;
+        }
+        .alert-success {
+            background: #e9ffe9;
+            color: #1c9f1c;
+            border-left: 4px solid #6bff6b;
+        }
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #2c2c2c;
+        }
+        .profile-avatar-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #2c2c2c;
+            color: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        {% block extra_css %}{% endblock %}
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    {% if session.get('usuario_logado') %}
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('main.home') }}" class="nav-brand">
+                <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="ReutilizaIF" class="nav-brand-logo">
+            </a>
+            <div class="nav-links">
+                <a href="{{ url_for('main.home') }}" class="nav-link {% if request.endpoint == 'main.home' %}nav-link-active{% endif %}">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('produtos.venda') }}" class="nav-link {% if request.endpoint == 'produtos.venda' %}nav-link-active{% endif %}">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Venda</span>
+                </a>
+                <a href="{{ url_for('produtos.troca') }}" class="nav-link {% if request.endpoint == 'produtos.troca' %}nav-link-active{% endif %}">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Troca</span>
+                </a>
+                <a href="{{ url_for('produtos.novo_produto') }}" class="nav-link nav-link-add {% if request.endpoint == 'produtos.novo_produto' or request.endpoint == 'produtos.editar_produto' %}nav-link-active{% endif %}">
+                    <i class="fas fa-plus"></i>
+                    <span>Adicionar Item</span>
+                </a>
+                <a href="{{ url_for('produtos.meus_produtos') }}" class="nav-link {% if request.endpoint == 'produtos.meus_produtos' %}nav-link-active{% endif %}">
+                    <i class="fas fa-box"></i>
+                    <span>Meus Produtos</span>
+                </a>
+                <a href="{{ url_for('perfil.perfil') }}" class="nav-link {% if request.endpoint == 'perfil.perfil' %}nav-link-active{% endif %}">
+                    <i class="fas fa-user"></i>
+                    <span>Perfil</span>
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sair</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - ReutilizaIF</title>
+    <title>Registro - ReutilizaIF</title>
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/icon.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -76,12 +76,6 @@
             height: 200px;
             object-fit: contain;
         }
-        .campus-text {
-            font-size: 0.85em;
-            color: #000;
-            max-width: 250px;
-            line-height: 1.3;
-        }
         .right-side {
             flex: 1;
             background: #fff;
@@ -93,9 +87,23 @@
         .welcome-text {
             font-size: 1.8em;
             color: #000;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             font-weight: 400;
             font-family: 'Poppins', sans-serif;
+        }
+        .user-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #00FF88;
+        }
+        .user-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .user-info strong {
+            color: #000;
         }
         .alert {
             padding: 12px;
@@ -105,6 +113,11 @@
             border-left: 3px solid #ffc107;
             font-size: 0.9em;
             border-radius: 4px;
+        }
+        .alert-error {
+            background: #ffe9e9;
+            color: #9f1c1c;
+            border-left-color: #ff6b6b;
         }
         @media (max-width: 768px) {
             .login-container {
@@ -138,45 +151,41 @@
         </div>
         
         <div class="right-side">
-            <h1 class="welcome-text">bem vindo!</h1>
+            <h1 class="welcome-text">Criar Conta</h1>
+            <p style="color: #666; margin-bottom: 30px;">Crie uma senha para sua conta</p>
+            
+            {% if dados_usuario %}
+            <div class="user-info">
+                <p><strong>Matrícula:</strong> {{ matricula }}</p>
+                <p><strong>Nome:</strong> {{ dados_usuario.get('nome_usual') or dados_usuario.get('nome_social') or dados_usuario.get('nome') or dados_usuario.get('nome_registro') or (dados_usuario.get('primeiro_nome', '') + ' ' + dados_usuario.get('ultimo_nome', '')).strip() or 'Carregando...' }}</p>
+            </div>
+            {% endif %}
             
             {% if error %}
-            <div class="alert">
+            <div class="alert alert-error">
                 {{ error }}
             </div>
             {% endif %}
             
-            <form action="/login" method="post">
+            <form action="/registro" method="post">
                 <div class="ui-input-group">
-                    <label for="matricula" class="ui-input-label">Matrícula</label>
-                    <input type="text" name="matricula" id="matricula" class="ui-input" required placeholder="Digite sua matrícula">
+                    <label for="senha" class="ui-input-label">Nova Senha</label>
+                    <input type="password" name="senha" id="senha" class="ui-input" required placeholder="Digite sua senha (mínimo 6 caracteres)">
                 </div>
 
                 <div class="ui-input-group">
-                    <label for="senha" class="ui-input-label">Senha</label>
-                    <input type="password" name="senha" id="senha" class="ui-input" required placeholder="Digite sua senha">
+                    <label for="confirmar_senha" class="ui-input-label">Confirmar Senha</label>
+                    <input type="password" name="confirmar_senha" id="confirmar_senha" class="ui-input" required placeholder="Confirme sua senha">
                 </div>
 
-                <button type="submit" class="ui-btn ui-btn-primary ui-btn-full">Login</button>
+                <button type="submit" class="ui-btn ui-btn-primary ui-btn-full">Criar Conta</button>
             </form>
             
             <p style="text-align: center; margin-top: 20px; color: #666; font-size: 0.9em;">
-                Primeira vez? Faça login com SUAP para criar sua conta
+                Já tem uma conta? <a href="{{ url_for('auth.login') }}" style="color: #00FF88; text-decoration: none; font-weight: 600;">Fazer Login</a>
             </p>
         </div>
     </div>
-
-    <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('senha');
-            const eyeIcon = document.getElementById('eye-icon');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-            } else {
-                passwordInput.type = 'password';
-            }
-        }
-    </script>
 </body>
 </html>
+

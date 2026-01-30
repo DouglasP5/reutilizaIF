@@ -1,0 +1,91 @@
+ROTAS DO SISTEMA REUTILIZAIF
+=============================
+
+AUTENTICACAO (routes/auth.py)
+------------------------------
+/login (GET, POST)
+- GET: Exibe pagina de login
+- POST: Autentica usuario com SUAP ou senha local
+- Se primeira vez: redireciona para registro
+- Se ja tem senha local: faz login direto
+
+/registro (GET, POST)
+- GET: Exibe pagina de criacao de senha local
+- POST: Cria senha local e salva dados do usuario
+- Requer autenticacao previa com SUAP
+- Salva nome, curso, campus, foto e JWT token
+
+/logout (GET)
+- Limpa sessao do usuario
+- Redireciona para pagina de login
+
+
+PRINCIPAL (routes/main.py)
+---------------------------
+/ (GET)
+- Pagina inicial publica
+- Exibe estatisticas: total usuarios, produtos, produtos a venda, produtos para troca
+
+/home (GET)
+- Pagina principal para usuarios logados
+- Lista todos os produtos disponiveis
+- Exibe mapa com localizacao dos produtos (OpenLayers)
+- Mostra avaliacoes de cada produto
+- Requer login
+
+
+PRODUTOS (routes/produtos.py)
+------------------------------
+/produtos/novo (GET, POST)
+- GET: Exibe formulario para cadastrar novo produto
+- POST: Cria novo produto no banco de dados
+- Campos: nome, preco, descricao, tipo (venda/troca), endereco, coordenadas
+- Requer login
+
+/meus-produtos (GET)
+- Lista todos os produtos do usuario logado
+- Mostra avaliacoes e status de cada produto
+- Permite editar e excluir produtos proprios
+- Requer login
+
+/produtos/<id>/editar (GET, POST)
+- GET: Exibe formulario de edicao do produto
+- POST: Atualiza dados do produto
+- Permite editar se for dono do produto ou admin
+- Requer login
+
+/produtos/<id>/excluir (POST)
+- Remove produto do banco de dados
+- Permite excluir se for dono do produto ou admin
+- Requer login
+
+/venda (GET)
+- Lista apenas produtos a venda (tipo=venda, status=disponivel)
+- Requer login
+
+/troca (GET)
+- Lista apenas produtos para troca (tipo=troca, status=disponivel)
+- Requer login
+
+/produtos/<id>/avaliar (POST)
+- Cria ou atualiza avaliacao de um produto
+- Nota de 1 a 5 estrelas e comentario opcional
+- Retorna JSON com media e total de avaliacoes
+- Requer login
+
+
+PERFIL (routes/perfil.py)
+--------------------------
+/perfil (GET, POST)
+- GET: Exibe perfil do usuario logado
+- POST: Atualiza telefone do usuario
+- Mostra dados do SUAP: nome, matricula, curso, campus, foto
+- Requer login
+
+/usuarios/<matricula> (GET, POST)
+- GET: Exibe perfil publico de outro usuario
+- POST: Admin pode atualizar telefone de outros usuarios
+- Mostra produtos cadastrados pelo usuario
+- Requer login
+
+

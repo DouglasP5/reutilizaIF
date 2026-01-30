@@ -1,146 +1,227 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if acao == 'editar' %}Editar{% else %}Novo{% endif %} Produto - ReutilizaIF</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #f7f7f7;
-            color: #2c2c2c;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-        }
-        .card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 40px;
-            width: 100%;
-            max-width: 520px;
-            box-shadow: 0 24px 60px rgba(0,0,0,0.08);
-        }
-        h1 {
-            font-size: 1.8em;
-            font-weight: 600;
-            margin-bottom: 30px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-        }
-        input[type="text"],
-        textarea {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid #dfe3e6;
-            border-radius: 8px;
-            font-size: 1em;
-            font-family: inherit;
-            transition: border 0.2s ease;
-        }
-        textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
-        input[type="text"]:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #00FF88;
-            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.2);
-        }
-        .actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        .btn {
-            flex: 1;
-            text-align: center;
-            padding: 14px;
-            border-radius: 8px;
-            border: none;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s;
-        }
-        .btn-primary {
-            background: #00FF88;
-            color: #000;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,255,136,0.3);
-        }
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-        }
-        .alert {
-            background: #ffe9e9;
-            color: #9f1c1c;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 0.9em;
-            margin-bottom: 20px;
-            border-left: 4px solid #ff6b6b;
-        }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h1>{% if acao == 'editar' %}Editar Produto{% else %}Novo Produto{% endif %}</h1>
+{% extends "base.html" %}
+
+{% block title %}{% if acao == 'editar' %}Editar{% else %}Novo{% endif %} Produto - ReutilizaIF{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .form-header {
+        margin-bottom: 30px;
+    }
+    .form-header h1 {
+        font-size: 2em;
+        font-weight: 700;
+        color: #000;
+        font-family: 'Poppins', sans-serif;
+    }
+    .tipo-info {
+        font-size: 0.85em;
+        color: #666;
+        margin-top: 5px;
+    }
+    .ui-input-group {
+        position: relative;
+    }
+    #sugestoes-endereco {
+        position: absolute;
+        z-index: 1000;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        max-height: 300px;
+        overflow-y: auto;
+        width: 100%;
+        margin-top: 5px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        top: 100%;
+        left: 0;
+    }
+    .sugestao-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.2s;
+    }
+    .sugestao-item:hover {
+        background: #f5f5f5;
+    }
+    .sugestao-item:last-child {
+        border-bottom: none;
+    }
+    .sugestao-item strong {
+        color: #000;
+        display: block;
+        margin-bottom: 4px;
+    }
+    .sugestao-item small {
+        color: #666;
+        font-size: 0.85em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-header">
+            <h1>{% if acao == 'editar' %}Editar Produto{% else %}Adicionar Novo Produto{% endif %}</h1>
+        </div>
 
         {% if error %}
-        <div class="alert">{{ error }}</div>
+        <div class="alert alert-error">{{ error }}</div>
         {% endif %}
 
         <form method="post">
-            <div class="form-group">
-                <label for="nome">Nome</label>
-                <input type="text" id="nome" name="nome" required value="{{ produto.nome if produto else '' }}">
+            <div class="ui-input-group">
+                <label for="tipo" class="ui-input-label">Tipo de Anúncio *</label>
+                <select id="tipo" name="tipo" class="ui-select" required>
+                    <option value="venda" {% if produto and produto.tipo == 'venda' %}selected{% endif %}>Venda</option>
+                    <option value="troca" {% if produto and produto.tipo == 'troca' %}selected{% endif %}>Troca</option>
+                </select>
             </div>
 
-            <div class="form-group">
-                <label for="preco">Preço</label>
-                <input type="text" id="preco" name="preco" required value="{{ '%.2f' % produto.preco if produto else '' }}" placeholder="Ex: 99.90">
+            <div class="ui-input-group">
+                <label for="nome" class="ui-input-label">Nome do Produto *</label>
+                <input type="text" id="nome" name="nome" class="ui-input" required value="{{ produto.nome if produto else '' }}" placeholder="Ex: Livro de Python">
             </div>
 
-            <div class="form-group">
-                <label for="descricao">Descrição</label>
-                <textarea id="descricao" name="descricao" placeholder="Detalhes do produto">{{ produto.descricao if produto else '' }}</textarea>
+            <div class="ui-input-group" id="preco-group">
+                <label for="preco" class="ui-input-label">Preço (R$) *</label>
+                <input type="text" id="preco" name="preco" class="ui-input" value="{{ '%.2f' % produto.preco if produto and produto.preco else '' }}" placeholder="Ex: 99.90">
+                <div class="tipo-info">Obrigatório apenas para produtos à venda</div>
             </div>
 
-            <div class="actions">
-                <button type="submit" class="btn btn-primary">
-                    {% if acao == 'editar' %}Salvar Alterações{% else %}Cadastrar{% endif %}
+            <div class="ui-input-group">
+                <label for="descricao" class="ui-input-label">Descrição</label>
+                <textarea id="descricao" name="descricao" class="ui-textarea" placeholder="Descreva o produto, estado de conservação, etc.">{{ produto.descricao if produto else '' }}</textarea>
+            </div>
+
+            <div class="ui-input-group">
+                <label class="ui-input-label">
+                    <i class="fas fa-map-marker-alt"></i> Localização (opcional)
+                </label>
+                <div class="tipo-info" style="margin-bottom: 10px;">Digite o endereço e selecione uma das opções sugeridas</div>
+                <input type="text" id="endereco-input" name="endereco" class="ui-input" placeholder="Ex: Campus Natal-Central, IFRN" value="{{ produto.endereco if produto and produto.endereco else '' }}" autocomplete="off">
+                <div id="sugestoes-endereco"></div>
+                <input type="hidden" id="latitude" name="latitude" value="{{ produto.latitude if produto and produto.latitude else '' }}">
+                <input type="hidden" id="longitude" name="longitude" value="{{ produto.longitude if produto and produto.longitude else '' }}">
+            </div>
+
+            <div class="ui-btn-group">
+                <button type="submit" class="ui-btn ui-btn-primary">
+                    {% if acao == 'editar' %}Salvar Alterações{% else %}Cadastrar Produto{% endif %}
                 </button>
-                <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancelar</a>
+                <a href="{{ url_for('main.home') }}" class="ui-btn ui-btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>
-</body>
-</html>
+</div>
 
+<script>
+    const tipoSelect = document.getElementById('tipo');
+    const precoGroup = document.getElementById('preco-group');
+    const precoInput = document.getElementById('preco');
+
+    function togglePreco() {
+        if (tipoSelect.value === 'troca') {
+            precoInput.removeAttribute('required');
+            precoGroup.style.opacity = '0.5';
+        } else {
+            precoInput.setAttribute('required', 'required');
+            precoGroup.style.opacity = '1';
+        }
+    }
+
+    tipoSelect.addEventListener('change', togglePreco);
+    togglePreco();
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const enderecoInput = document.getElementById('endereco-input');
+    const sugestoesDiv = document.getElementById('sugestoes-endereco');
+    let timeoutBusca = null;
+    
+    if (enderecoInput) {
+        enderecoInput.addEventListener('input', function() {
+            const texto = this.value.trim();
+            
+            if (timeoutBusca) {
+                clearTimeout(timeoutBusca);
+            }
+            
+            if (texto.length < 3) {
+                sugestoesDiv.style.display = 'none';
+                return;
+            }
+            
+            timeoutBusca = setTimeout(function() {
+                buscarSugestoesEndereco(texto);
+            }, 500);
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!enderecoInput.contains(e.target) && !sugestoesDiv.contains(e.target)) {
+                sugestoesDiv.style.display = 'none';
+            }
+        });
+        
+        enderecoInput.addEventListener('focus', function() {
+            if (this.value.trim().length >= 3) {
+                buscarSugestoesEndereco(this.value.trim());
+            }
+        });
+    }
+    
+    function buscarSugestoesEndereco(texto) {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(texto)}&limit=5&addressdetails=1&countrycodes=br`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    mostrarSugestoes(data);
+                } else {
+                    sugestoesDiv.style.display = 'none';
+                }
+            })
+            .catch(() => {
+                sugestoesDiv.style.display = 'none';
+            });
+    }
+    
+    function mostrarSugestoes(sugestoes) {
+        sugestoesDiv.innerHTML = '';
+        
+        sugestoes.forEach(function(sugestao) {
+            const item = document.createElement('div');
+            item.className = 'sugestao-item';
+            
+            const nome = sugestao.display_name || sugestao.name || 'Endereço';
+            const tipo = sugestao.type || '';
+            
+            item.innerHTML = `
+                <strong>${nome}</strong>
+                <small>${tipo ? tipo + ' • ' : ''}${sugestao.lat}, ${sugestao.lon}</small>
+            `;
+            
+            item.addEventListener('click', function() {
+                enderecoInput.value = nome;
+                document.getElementById('latitude').value = sugestao.lat;
+                document.getElementById('longitude').value = sugestao.lon;
+                sugestoesDiv.style.display = 'none';
+            });
+            
+            sugestoesDiv.appendChild(item);
+        });
+        
+        sugestoesDiv.style.display = 'block';
+    }
+</script>
+{% endblock %}

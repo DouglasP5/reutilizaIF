@@ -1,0 +1,65 @@
+MODELOS DO BANCO DE DADOS - REUTILIZAIF
+========================================
+
+TABELA: produto
+----------------
+Campos:
+- id (Integer, Primary Key): Identificador unico do produto
+- nome (String 100, Not Null): Nome do produto
+- preco (Float, Not Null): Preco do produto (0.0 para troca)
+- descricao (String 500): Descricao detalhada do produto
+- usuario_matricula (String 20): Matricula do usuario que cadastrou
+- usuario_nome (String 150): Nome do usuario que cadastrou
+- tipo (String 20, Default='venda'): Tipo do produto (venda, troca, doacao)
+- status (String 20, Default='disponivel'): Status do produto (disponivel, vendido, trocado, reservado)
+- endereco (String 200): Endereco ou localizacao do produto
+- latitude (Float): Latitude para exibicao no mapa
+- longitude (Float): Longitude para exibicao no mapa
+- created_at (DateTime): Data e hora de criacao
+- updated_at (DateTime): Data e hora da ultima atualizacao
+
+Relacionamentos:
+- Tem muitas avaliacoes (Avaliacao)
+
+
+TABELA: usuario_info
+---------------------
+Campos:
+- id (Integer, Primary Key): Identificador unico do usuario
+- matricula (String 20, Unique, Not Null, Indexed): Matricula do IFRN (chave unica)
+- telefone (String 30): Telefone de contato do usuario
+- nome (String 150): Nome do usuario (coletado do SUAP)
+- curso (String 150): Curso do usuario (coletado do SUAP)
+- campus (String 150): Campus do usuario (coletado do SUAP)
+- foto_url (String 300): URL da foto do perfil (coletado do SUAP)
+- senha_hash (String 255): Hash da senha local do usuario
+- jwt_token (Text): Token JWT do SUAP para autenticacao
+- created_at (DateTime): Data e hora de criacao do registro
+- updated_at (DateTime): Data e hora da ultima atualizacao
+
+Observacoes:
+- Matricula e unica e indexada para busca rapida
+- Dados coletados automaticamente do SUAP no primeiro login
+- Senha local criada no registro apos autenticacao com SUAP
+
+
+TABELA: avaliacao
+------------------
+Campos:
+- id (Integer, Primary Key): Identificador unico da avaliacao
+- produto_id (Integer, Foreign Key -> produto.id, Not Null): ID do produto avaliado
+- avaliador_matricula (String 20, Not Null): Matricula de quem fez a avaliacao
+- nota (Integer, Not Null): Nota de 1 a 5 estrelas
+- comentario (String 500): Comentario opcional sobre o produto
+- created_at (DateTime): Data e hora da avaliacao
+
+Relacionamentos:
+- Pertence a um produto (Produto)
+- Um usuario pode avaliar o mesmo produto apenas uma vez (atualiza se ja existir)
+
+Observacoes:
+- Nota deve ser entre 1 e 5
+- Comentario e opcional
+- Media de avaliacoes calculada dinamicamente
+
+

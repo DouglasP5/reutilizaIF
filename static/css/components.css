@@ -1,0 +1,293 @@
+.ui-input,
+input.ui-input,
+textarea.ui-input {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid #e0e0e0 !important;
+    font-size: 1em !important;
+    font-family: inherit !important;
+    color: #000 !important;
+    transition: all 0.3s ease !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+}
+
+.ui-input::placeholder,
+input.ui-input::placeholder,
+textarea.ui-input::placeholder {
+    color: #999 !important;
+    opacity: 1 !important;
+}
+
+.ui-input:focus,
+input.ui-input:focus,
+textarea.ui-input:focus {
+    border-bottom-color: #00FF88 !important;
+    background: rgba(0, 255, 136, 0.05) !important;
+}
+
+.ui-input:focus::placeholder {
+    color: #666;
+}
+
+.ui-input-group {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.ui-input-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    color: #333;
+}
+
+.ui-input-wrapper {
+    position: relative;
+}
+
+.ui-input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 1.1em;
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+.ui-input-wrapper .ui-input {
+    padding-left: 45px;
+}
+
+.ui-input-wrapper .ui-input:focus + .ui-input-icon {
+    color: #00FF88;
+}
+
+.ui-input.error {
+    border-bottom-color: #ff5a5a;
+}
+
+.ui-input.error:focus {
+    border-bottom-color: #ff5a5a;
+    background: rgba(255, 90, 90, 0.05);
+}
+
+.ui-input-error {
+    color: #ff5a5a;
+    font-size: 0.85em;
+    margin-top: 5px;
+    display: block;
+}
+
+.ui-btn,
+button.ui-btn,
+a.ui-btn {
+    padding: 14px 32px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 1em !important;
+    font-weight: 600 !important;
+    font-family: inherit !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    text-decoration: none !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.ui-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.ui-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.ui-btn:active {
+    transform: scale(0.98);
+}
+
+.ui-btn-primary,
+button.ui-btn-primary,
+a.ui-btn-primary {
+    background: #00FF88 !important;
+    color: #000 !important;
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3) !important;
+}
+
+.ui-btn-primary:hover {
+    background: #00CC6A;
+    box-shadow: 0 6px 16px rgba(0, 255, 136, 0.4);
+    transform: translateY(-2px);
+}
+
+.ui-btn-secondary,
+button.ui-btn-secondary,
+a.ui-btn-secondary {
+    background: transparent !important;
+    color: #000 !important;
+    border: 2px solid #000 !important;
+}
+
+.ui-btn-secondary:hover {
+    background: #000;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.ui-btn-danger {
+    background: #ff5a5a;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(255, 90, 90, 0.3);
+}
+
+.ui-btn-danger:hover {
+    background: #ff3a3a;
+    box-shadow: 0 6px 16px rgba(255, 90, 90, 0.4);
+    transform: translateY(-2px);
+}
+
+.ui-btn-outline {
+    background: transparent;
+    color: #00FF88;
+    border: 2px solid #00FF88;
+}
+
+.ui-btn-outline:hover {
+    background: #00FF88;
+    color: #000;
+    transform: translateY(-2px);
+}
+
+.ui-btn-small {
+    padding: 10px 20px;
+    font-size: 0.9em;
+}
+
+.ui-btn-large {
+    padding: 18px 40px;
+    font-size: 1.1em;
+}
+
+.ui-btn-full {
+    width: 100%;
+}
+
+.ui-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.ui-btn:disabled:hover {
+    transform: none;
+}
+
+.ui-textarea,
+textarea.ui-textarea {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid #e0e0e0 !important;
+    font-size: 1em !important;
+    font-family: inherit !important;
+    color: #000 !important;
+    transition: all 0.3s ease !important;
+    outline: none !important;
+    resize: vertical !important;
+    min-height: 120px !important;
+    box-sizing: border-box !important;
+}
+
+.ui-textarea::placeholder,
+textarea.ui-textarea::placeholder {
+    color: #999 !important;
+    opacity: 1 !important;
+}
+
+.ui-textarea:focus,
+textarea.ui-textarea:focus {
+    border-bottom-color: #00FF88 !important;
+    background: rgba(0, 255, 136, 0.05) !important;
+}
+
+.ui-textarea:focus::placeholder,
+textarea.ui-textarea:focus::placeholder {
+    color: #666 !important;
+}
+
+.ui-select,
+select.ui-select {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    padding-right: 40px !important;
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid #e0e0e0 !important;
+    font-size: 1em !important;
+    font-family: inherit !important;
+    color: #000 !important;
+    transition: all 0.3s ease !important;
+    outline: none !important;
+    cursor: pointer !important;
+    appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 16px center !important;
+    box-sizing: border-box !important;
+}
+
+.ui-select:focus,
+select.ui-select:focus {
+    border-bottom-color: #00FF88 !important;
+    background-color: rgba(0, 255, 136, 0.05) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300FF88' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+}
+
+.ui-btn-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.ui-btn-group .ui-btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+@media (max-width: 768px) {
+    .ui-btn-group {
+        flex-direction: column;
+    }
+    
+    .ui-btn-group .ui-btn {
+        width: 100%;
+    }
+    
+    .ui-btn {
+        padding: 12px 24px;
+    }
+}
+

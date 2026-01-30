@@ -1,0 +1,77 @@
+BIBLIOTECAS E DEPENDENCIAS - REUTILIZAIF
+========================================
+
+BIBLIOTECAS EXTERNAS (requirements.txt)
+----------------------------------------
+
+Flask==3.0.0
+- Framework web principal
+- Cria aplicacao web, rotas, templates
+- Gerencia requisicoes HTTP (GET, POST)
+- Usado em: app.py, todas as rotas
+
+Flask-SQLAlchemy==3.1.1
+- Extensao do Flask para banco de dados
+- ORM (Object-Relational Mapping)
+- Cria e gerencia modelos de banco de dados
+- Usado em: models.py, todas as rotas que acessam banco
+
+requests==2.31.0
+- Faz requisicoes HTTP para APIs externas
+- Usado para comunicar com API do SUAP
+- Usado em: utils.py (autenticar_suap, obter_dados_usuario_suap)
+
+pymysql==1.1.0
+- Driver para conectar com banco MySQL
+- Usado pelo SQLAlchemy para conexao com MySQL
+- Usado em: config.py (string de conexao)
+
+python-dotenv==1.0.0
+- Carrega variaveis de ambiente do arquivo .env
+- Usado para configuracao segura (senhas, chaves)
+- Usado em: config.py
+
+Werkzeug==3.1.4
+- Biblioteca base do Flask
+- Funcoes de seguranca: hash de senhas
+- generate_password_hash: cria hash de senha
+- check_password_hash: verifica senha
+- Usado em: routes/auth.py
+
+
+BIBLIOTECAS PADRAO DO PYTHON
+----------------------------
+
+os
+- Acessa variaveis de ambiente do sistema
+- Usado em: config.py
+
+sqlalchemy (func)
+- Funcoes de agregacao SQL (COUNT, AVG, SUM)
+- Usado para consultas otimizadas no banco
+- Usado em: routes/main.py, routes/produtos.py
+
+sys, io
+- Manipulacao de encoding e saida do sistema
+- Usado em: init_db.py (configuracao UTF-8)
+
+
+RESUMO POR FUNCAO
+------------------
+
+Desenvolvimento Web:
+- Flask: Framework principal
+- Flask-SQLAlchemy: Banco de dados
+
+Seguranca:
+- Werkzeug: Hash de senhas
+- python-dotenv: Variaveis de ambiente
+
+Comunicacao Externa:
+- requests: API do SUAP
+
+Banco de Dados:
+- pymysql: Driver MySQL
+- sqlalchemy: ORM e consultas
+
+

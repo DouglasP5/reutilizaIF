@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ReutilizaIF</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/icon.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     <style>
         * {
             margin: 0;
@@ -19,37 +22,105 @@
             color: #000;
             line-height: 1.6;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            padding: 0;
         }
         .container {
-            max-width: 800px;
+            max-width: 1200px;
+            margin: 0 auto;
             width: 100%;
+        }
+        .header {
             text-align: center;
+            margin-bottom: 60px;
         }
         h1 {
-            font-size: 3em;
+            font-size: 3.5em;
             font-weight: 700;
             color: #000;
             margin-bottom: 20px;
-            letter-spacing: -1px;
+            letter-spacing: -2px;
             font-family: 'Poppins', sans-serif;
         }
         .subtitle {
-            font-size: 1.2em;
-            color: #000;
-            margin-bottom: 50px;
+            font-size: 1.3em;
+            color: #666;
+            margin-bottom: 20px;
             font-weight: 400;
         }
-        .description {
-            max-width: 600px;
-            margin: 0 auto 60px;
+        
+        .stats-section {
+            margin: 60px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #00FF88 0%, #00CC6A 100%);
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 255, 136, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0, 255, 136, 0.3);
+        }
+        .stat-number {
+            font-size: 4em;
+            font-weight: 700;
             color: #000;
+            margin-bottom: 10px;
+            font-family: 'Poppins', sans-serif;
+            position: relative;
+            z-index: 1;
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 1.1em;
+            color: #000;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        .stat-icon i {
+            color: #000;
+        }
+        
+        .description {
+            max-width: 800px;
+            margin: 0 auto 60px;
+            color: #333;
             font-size: 1.1em;
             line-height: 1.8;
-            text-align: left;
+            text-align: center;
         }
         .description p {
             margin-bottom: 20px;
@@ -59,25 +130,29 @@
             gap: 20px;
             justify-content: center;
             flex-wrap: wrap;
+            margin-top: 40px;
         }
         .btn {
-            padding: 14px 40px;
+            padding: 16px 50px;
             text-decoration: none;
             border: none;
-            font-size: 1em;
+            font-size: 1.1em;
             font-weight: 600;
             transition: all 0.3s ease;
             cursor: pointer;
             display: inline-block;
-            border-radius: 4px;
+            border-radius: 8px;
             font-family: 'Inter', sans-serif;
         }
         .btn-primary {
             background: #00FF88;
             color: #000;
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
         }
         .btn-primary:hover {
             background: #00CC6A;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 255, 136, 0.4);
         }
         .btn-secondary {
             background: transparent;
@@ -88,9 +163,17 @@
             background: #000;
             color: #fff;
         }
+        
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5em;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .stat-number {
+                font-size: 3em;
             }
             .buttons {
                 flex-direction: column;
@@ -104,20 +187,46 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>ReutilizaIF</h1>
-        <p class="subtitle">Plataforma de reutilização e compartilhamento de recursos</p>
+    {% include 'header_public.html' %}
+    <div class="container" style="padding: 40px 20px;">
+        <div class="header">
+            <h1>ReutilizaIF</h1>
+            <p class="subtitle">Plataforma de reutilização e compartilhamento de recursos</p>
+        </div>
+        
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-number">{{ total_usuarios }}</div>
+                    <div class="stat-label">Usuários Ativos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-box"></i></div>
+                    <div class="stat-number">{{ total_produtos }}</div>
+                    <div class="stat-label">Produtos Cadastrados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <div class="stat-number">{{ produtos_venda }}</div>
+                    <div class="stat-label">Produtos à Venda</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-exchange-alt"></i></div>
+                    <div class="stat-number">{{ produtos_troca }}</div>
+                    <div class="stat-label">Produtos para Troca</div>
+                </div>
+            </div>
+        </div>
         
         <div class="description">
             <p>
-                O ReutilizaIF é uma plataforma desenvolvida para promover a sustentabilidade e o consumo consciente 
-                dentro do ambiente acadêmico. Nossa missão é facilitar a reutilização de produtos e materiais, 
-                conectando pessoas que desejam compartilhar recursos e reduzir o desperdício.
+                O Reutiliza IF é uma plataforma digital criada para incentivar a economia circular no ambiente educacional. Aqui, estudantes do Instituto Federal podem anunciar produtos que não utilizam mais, como roupas, calçados, livros, cadernos e outros materiais, possibilitando a troca ou venda entre a comunidade acadêmica.
             </p>
             <p>
-                Através desta plataforma, você pode cadastrar produtos disponíveis para reutilização, encontrar 
-                itens que precisa e contribuir para um ambiente mais sustentável. Juntos, podemos fazer a diferença 
-                e criar uma comunidade mais consciente e responsável.
+                A proposta do Reutiliza IF é reduzir o desperdício, promover o consumo consciente e facilitar a reutilização de bens, unindo tecnologia, sustentabilidade e colaboração. Ao reutilizar, você contribui para o meio ambiente, economiza e fortalece uma cultura mais responsável dentro do IF.
+                <br>
+Participe, reutilize e faça parte dessa mudança.
             </p>
         </div>
         
@@ -125,5 +234,6 @@
             <a href="/login" class="btn btn-primary">Login</a>
         </div>
     </div>
+
 </body>
 </html>

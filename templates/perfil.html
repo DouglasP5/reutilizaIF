@@ -1,322 +1,243 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil - ReutilizaIF</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #f5f5f5;
-            color: #000;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding: 20px 0;
-        }
-        .header h1 {
-            font-size: 2em;
-            font-weight: 700;
-            color: #000;
-            font-family: 'Poppins', sans-serif;
-        }
-        .nav-buttons {
-            display: flex;
-            gap: 15px;
-        }
-        .btn {
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 0.95em;
-            font-weight: 500;
-            transition: all 0.3s;
-            display: inline-block;
-        }
-        .btn-primary {
-            background: #00FF88;
-            color: #000;
-            border: none;
-        }
-        .btn-primary:hover {
-            background: #00CC6A;
-        }
-        .btn-secondary {
-            background: transparent;
-            color: #000;
-            border: 2px solid #000;
-        }
-        .btn-secondary:hover {
-            background: #000;
-            color: #fff;
-        }
-        .profile-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
+{% extends "base.html" %}
+
+{% block title %}{% if usuario and (session.matricula and session.matricula == (usuario.matricula if usuario.matricula else None)) %}Meu Perfil{% elif usuario and usuario.nome %}Perfil de {{ usuario.nome }}{% else %}Perfil{% endif %} - ReutilizaIF{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        margin-bottom: 30px;
+    }
+    .page-header h1 {
+        font-size: 2em;
+        font-weight: 700;
+        color: #000;
+        font-family: 'Poppins', sans-serif;
+    }
+    .profile-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .profile-photo {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #00FF88;
+        background: #f0f0f0;
+    }
+    .profile-info-header {
+        flex: 1;
+    }
+    .profile-name {
+        font-size: 2em;
+        font-weight: 700;
+        color: #000;
+        margin-bottom: 10px;
+        font-family: 'Poppins', sans-serif;
+    }
+    .profile-matricula {
+        font-size: 1.1em;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    .info-section {
+        margin-bottom: 30px;
+    }
+    .section-title {
+        font-size: 1.3em;
+        font-weight: 600;
+        color: #000;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #00FF88;
+        font-family: 'Poppins', sans-serif;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    .info-item {
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+    .info-label {
+        font-size: 0.85em;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    .info-value {
+        font-size: 1.1em;
+        color: #000;
+        font-weight: 500;
+    }
+    .phone-form {
+        margin-top: 20px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .phone-form input {
+        flex: 1;
+        padding: 14px 16px;
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        font-size: 1em;
+    }
+    .phone-form input:focus {
+        outline: none;
+        border-color: #00FF88;
+    }
+    .phone-form button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        background: #00FF88;
+        color: #000;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .phone-form button:hover {
+        background: #00cc6a;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+    @media (max-width: 768px) {
         .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            margin-bottom: 40px;
-            padding-bottom: 30px;
-            border-bottom: 2px solid #f0f0f0;
+            flex-direction: column;
+            text-align: center;
         }
         .profile-photo {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #00FF88;
-            background: #f0f0f0;
-        }
-        .profile-info-header {
-            flex: 1;
+            width: 120px;
+            height: 120px;
         }
         .profile-name {
-            font-size: 2em;
-            font-weight: 700;
-            color: #000;
-            margin-bottom: 10px;
-            font-family: 'Poppins', sans-serif;
-        }
-        .profile-matricula {
-            font-size: 1.1em;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        .profile-email {
-            font-size: 1em;
-            color: #666;
-        }
-        .info-section {
-            margin-bottom: 30px;
-        }
-        .info-section:last-child {
-            margin-bottom: 0;
-        }
-        .section-title {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #000;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #00FF88;
-            font-family: 'Poppins', sans-serif;
+            font-size: 1.5em;
         }
         .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: 1fr;
         }
-        .info-item {
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 8px;
-        }
-        .info-label {
-            font-size: 0.85em;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-        .info-value {
-            font-size: 1.1em;
-            color: #000;
-            font-weight: 500;
-        }
-        .vinculos-section {
-            margin-top: 30px;
-        }
-        .vinculo-card {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #00FF88;
-        }
-        .vinculo-title {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #000;
-            margin-bottom: 10px;
-        }
-        .vinculo-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-        .status-ativo {
-            background: #00FF88;
-            color: #000;
-        }
-        .status-inativo {
-            background: #ccc;
-            color: #666;
-        }
-        .phone-form {
-            margin-top: 20px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .phone-form input {
-            flex: 1;
-            padding: 14px 16px;
-            border-radius: 8px;
-            border: 1px solid #dfe3e6;
-            font-size: 1em;
-        }
-        .phone-form button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            background: #00FF88;
-            color: #000;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .phone-form button:hover {
-            background: #00cc6a;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-        @media (max-width: 768px) {
-            .profile-header {
-                flex-direction: column;
-                text-align: center;
-            }
-            .profile-photo {
-                width: 120px;
-                height: 120px;
-            }
-            .profile-name {
-                font-size: 1.5em;
-            }
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-            .nav-buttons {
-                flex-direction: column;
-            }
-            .btn {
-                text-align: center;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>{% if usuario and (session.matricula and session.matricula == (usuario.matricula if usuario.matricula else None)) %}Meu Perfil{% elif usuario and usuario.nome %}Perfil de {{ usuario.nome }}{% else %}Perfil{% endif %}</h1>
-            <div class="nav-buttons">
-                <a href="/home" class="btn btn-secondary">Voltar</a>
-                <a href="/logout" class="btn btn-primary">Sair</a>
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>{% if usuario and (session.matricula and session.matricula == (usuario.matricula if usuario.matricula else None)) %}Meu Perfil{% elif usuario and usuario.nome %}Perfil de {{ usuario.nome }}{% else %}Perfil{% endif %}</h1>
+    </div>
+
+    {% if usuario %}
+    <div class="profile-card">
+        <div class="profile-header">
+            {% if usuario.url_foto_150x200 %}
+            <img src="{{ usuario.url_foto_150x200 }}" alt="Foto do perfil" class="profile-photo">
+            {% elif usuario.url_foto_75x100 %}
+            <img src="{{ usuario.url_foto_75x100 }}" alt="Foto do perfil" class="profile-photo">
+            {% elif usuario.foto %}
+            <img src="{{ usuario.foto }}" alt="Foto do perfil" class="profile-photo">
+            {% endif %}
+            <div class="profile-info-header">
+                <div class="profile-name">
+                    {{ usuario.nome_usual if usuario.nome_usual else usuario.nome if usuario.nome else 'Usuário' }}
+                </div>
+                <div class="profile-matricula">
+                    Matrícula: {{ usuario.matricula if usuario.matricula else session.matricula if session.matricula else 'N/A' }}
+                </div>
             </div>
         </div>
 
-        {% if usuario %}
-        <div class="profile-card">
-            <div class="profile-header">
-                {% if usuario.url_foto_150x200 %}
-                <img src="{{ usuario.url_foto_150x200 }}" alt="Foto do perfil" class="profile-photo">
-                {% elif usuario.url_foto_75x100 %}
-                <img src="{{ usuario.url_foto_75x100 }}" alt="Foto do perfil" class="profile-photo">
-                {% endif %}
-                <div class="profile-info-header">
-                    <div class="profile-name">
-                        {{ usuario.nome_usual if usuario.nome_usual else usuario.nome if usuario.nome else 'Usuário' }}
-                    </div>
+        <div class="info-section">
+            <div class="section-title">Informações</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Matrícula</div>
+                    <div class="info-value">{{ usuario.matricula if usuario.matricula else session.matricula if session.matricula else 'N/A' }}</div>
                 </div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Matrícula</div>
-                            <div class="info-value">{{ usuario.matricula if usuario.matricula else session.matricula if session.matricula else 'N/A' }}</div>
-                    </div>
-                    {% if usuario.vinculo %}
-                        {% if usuario.vinculo.curso %}
-                            {% if usuario.vinculo.curso.nome %}
-                            <div class="info-item">
-                                <div class="info-label">Curso</div>
-                                <div class="info-value">{{ usuario.vinculo.curso.nome }}</div>
-                            </div>
-                            {% else %}
-                            <div class="info-item">
-                                <div class="info-label">Curso</div>
-                                <div class="info-value">{{ usuario.vinculo.curso }}</div>
-                            </div>
-                            {% endif %}
-                        {% endif %}
-                        {% if usuario.vinculo.campus %}
-                            {% if usuario.vinculo.campus.nome %}
-                            <div class="info-item">
-                                <div class="info-label">Campus</div>
-                                <div class="info-value">{{ usuario.vinculo.campus.nome }}</div>
-                            </div>
-                            {% else %}
-                            <div class="info-item">
-                                <div class="info-label">Campus</div>
-                                <div class="info-value">{{ usuario.vinculo.campus }}</div>
-                            </div>
-                            {% endif %}
+                {% if usuario.vinculo %}
+                    {% if usuario.vinculo.curso %}
+                        {% if usuario.vinculo.curso.nome %}
+                        <div class="info-item">
+                            <div class="info-label">Curso</div>
+                            <div class="info-value">{{ usuario.vinculo.curso.nome }}</div>
+                        </div>
+                        {% else %}
+                        <div class="info-item">
+                            <div class="info-label">Curso</div>
+                            <div class="info-value">{{ usuario.vinculo.curso }}</div>
+                        </div>
                         {% endif %}
                     {% endif %}
+                    {% if usuario.vinculo.campus %}
+                        {% if usuario.vinculo.campus.nome %}
+                        <div class="info-item">
+                            <div class="info-label">Campus</div>
+                            <div class="info-value">{{ usuario.vinculo.campus.nome }}</div>
+                        </div>
+                        {% else %}
+                        <div class="info-item">
+                            <div class="info-label">Campus</div>
+                            <div class="info-value">{{ usuario.vinculo.campus }}</div>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+                {% if telefone %}
+                <div class="info-item">
+                    <div class="info-label">Telefone</div>
+                    <div class="info-value">{{ telefone }}</div>
                 </div>
-
-                {% if (session.matricula and usuario and session.matricula == usuario.matricula) or is_admin %}
-                <form method="post" class="phone-form">
-                    <input type="text" name="telefone" placeholder="Digite seu telefone" value="{{ telefone if telefone else '' }}">
-                    <button type="submit">Salvar telefone</button>
-                </form>
                 {% endif %}
             </div>
+
+            {% if (session.matricula and usuario and session.matricula == usuario.matricula) or is_admin %}
+            <form method="post" class="ui-btn-group" style="margin-top: 20px;">
+                <input type="text" name="telefone" class="ui-input" placeholder="Digite seu telefone" value="{{ telefone if telefone else '' }}" style="flex: 1; margin: 0;">
+                <button type="submit" class="ui-btn ui-btn-primary">Salvar telefone</button>
+            </form>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="profile-card">
-            <div class="empty-state">
-                <p>Não foi possível carregar as informações do perfil.</p>
-                <a href="/home" class="btn btn-primary" style="margin-top: 20px;">Voltar para Home</a>
+
+        {% if (session.matricula and usuario and session.matricula == usuario.matricula) or is_admin %}
+        <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #f0f0f0;">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <a href="{{ url_for('produtos.meus_produtos') }}" class="ui-btn ui-btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-box"></i>
+                    <span>Meus Produtos</span>
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="ui-btn ui-btn-danger" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sair</span>
+                </a>
             </div>
         </div>
         {% endif %}
     </div>
-</body>
-</html>
-
+    {% else %}
+    <div class="profile-card">
+        <div class="empty-state">
+            <p>Não foi possível carregar as informações do perfil.</p>
+            <a href="{{ url_for('main.home') }}" class="btn btn-primary" style="margin-top: 20px;">Voltar para Home</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
