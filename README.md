@@ -56,6 +56,8 @@ Antes de iniciar, certifique-se de ter instalado em sua máquina:
 
 ---
 
+Membros antigos: Alexsander Bastos, Allyfh Pontes e Douglas Pierry
+Membros novos: Allyfh Pontes, Diego de Andrade, Douglas Pierry, Maria julianne, Ryann Deyv's e Willemberg Lopes
 ### 2️⃣ Clonar o Repositório
 
 Abra o terminal ou prompt de comando e execute:
