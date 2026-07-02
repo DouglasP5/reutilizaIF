@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - ReutilizaIF</title>
+    <title>Cadastro - ReutilizaIF</title>
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/icon.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -76,12 +76,6 @@
             height: 200px;
             object-fit: contain;
         }
-        .campus-text {
-            font-size: 0.85em;
-            color: #000;
-            max-width: 250px;
-            line-height: 1.3;
-        }
         .right-side {
             flex: 1;
             background: #fff;
@@ -93,7 +87,7 @@
         .welcome-text {
             font-size: 1.8em;
             color: #000;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             font-weight: 400;
             font-family: 'Poppins', sans-serif;
         }
@@ -105,6 +99,11 @@
             border-left: 3px solid #ffc107;
             font-size: 0.9em;
             border-radius: 4px;
+        }
+        .alert-error {
+            background: #ffe9e9;
+            color: #9f1c1c;
+            border-left-color: #ff6b6b;
         }
         @media (max-width: 768px) {
             .login-container {
@@ -136,56 +135,50 @@
                 <img src="{{ url_for('static', filename='img/Campus Natal-Zona Norte - Logo_Color Hor Compl .png') }}" alt="Campus Logo" class="campus-logo-img" onerror="this.onerror=null; this.src='img/Campus Natal-Zona Norte - Logo_Color Hor Compl .png';">
             </div>
         </div>
-        
+
         <div class="right-side">
-            <h1 class="welcome-text">bem vindo!</h1>
-            
+            <h1 class="welcome-text">Criar Conta</h1>
+            <p style="color: #666; margin-bottom: 30px;">Preencha os dados abaixo para se cadastrar</p>
+
             {% if error %}
-            <div class="alert">
+            <div class="alert alert-error">
                 {{ error }}
             </div>
             {% endif %}
-            
-            <form action="/login" method="post">
+
+            <form action="{{ url_for('auth.cadastro') }}" method="post">
+                <div class="ui-input-group">
+                    <label for="nome" class="ui-input-label">Nome completo</label>
+                    <input type="text" name="nome" id="nome" class="ui-input" required placeholder="Digite seu nome completo" value="{{ nome or '' }}">
+                </div>
+
                 <div class="ui-input-group">
                     <label for="matricula" class="ui-input-label">Matrícula</label>
-                    <input type="text" name="matricula" id="matricula" class="ui-input" required placeholder="Digite sua matrícula">
+                    <input type="text" name="matricula" id="matricula" class="ui-input" required placeholder="Digite sua matrícula" value="{{ matricula or '' }}">
+                </div>
+
+                <div class="ui-input-group">
+                    <label for="curso" class="ui-input-label">Curso (opcional)</label>
+                    <input type="text" name="curso" id="curso" class="ui-input" placeholder="Digite seu curso" value="{{ curso or '' }}">
                 </div>
 
                 <div class="ui-input-group">
                     <label for="senha" class="ui-input-label">Senha</label>
-                    <input type="password" name="senha" id="senha" class="ui-input" required placeholder="Digite sua senha">
+                    <input type="password" name="senha" id="senha" class="ui-input" required placeholder="Digite sua senha (mínimo 6 caracteres)">
                 </div>
 
-                <button type="submit" class="ui-btn ui-btn-primary ui-btn-full">Login</button>
+                <div class="ui-input-group">
+                    <label for="confirmar_senha" class="ui-input-label">Confirmar Senha</label>
+                    <input type="password" name="confirmar_senha" id="confirmar_senha" class="ui-input" required placeholder="Confirme sua senha">
+                </div>
+
+                <button type="submit" class="ui-btn ui-btn-primary ui-btn-full">Criar Conta</button>
             </form>
 
-            <p style="text-align: center; margin: 16px 0; color: #999; font-size: 0.85em;">ou</p>
-
-            <a href="{{ url_for('auth.login_google') }}" class="ui-btn ui-btn-full" style="background: #fff; border: 1px solid #ddd; color: #000; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none;">
-                <i class="fab fa-google"></i> Entrar com Google
-            </a>
-
             <p style="text-align: center; margin-top: 20px; color: #666; font-size: 0.9em;">
-                Não tem uma conta? <a href="{{ url_for('auth.cadastro') }}" style="color: #00FF88; text-decoration: none; font-weight: 600;">Cadastre-se</a>
-            </p>
-            <p style="text-align: center; margin-top: 8px; color: #666; font-size: 0.85em;">
-                Aluno do IF? Use sua matrícula e senha do SUAP no primeiro acesso
+                Já tem uma conta? <a href="{{ url_for('auth.login') }}" style="color: #00FF88; text-decoration: none; font-weight: 600;">Fazer Login</a>
             </p>
         </div>
     </div>
-
-    <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('senha');
-            const eyeIcon = document.getElementById('eye-icon');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-            } else {
-                passwordInput.type = 'password';
-            }
-        }
-    </script>
 </body>
 </html>

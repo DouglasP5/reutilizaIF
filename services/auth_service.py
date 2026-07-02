@@ -15,6 +15,25 @@ class AuthService:
         return {'sucesso': True, 'usuario': usuario, 'erro': None}
 
     @staticmethod
+    def cadastrar_local(nome, matricula, senha, curso=None) -> dict:
+        """Cria uma conta nova diretamente (sem validar contra o SUAP).
+
+        {'sucesso': bool, 'usuario': UsuarioInfo|None, 'erro': str|None}
+        """
+        usuario = UsuarioInfo.query.filter_by(matricula=matricula).first()
+        if usuario and usuario.senha_hash:
+            return {'sucesso': False, 'usuario': None, 'erro': 'Matrícula já cadastrada. Faça login.'}
+
+        usuario = usuario or UsuarioInfo(matricula=matricula)
+        usuario.nome = nome
+        if curso:
+            usuario.curso = curso
+        usuario.senha_hash = hash_senha(senha)
+        db.session.add(usuario)
+        db.session.commit()
+        return {'sucesso': True, 'usuario': usuario, 'erro': None}
+
+    @staticmethod
     def registrar(matricula, senha, token, dados_suap) -> UsuarioInfo:
         """Cria/atualiza usuário com hash de senha e token."""
         usuario = UsuarioInfo.obter_ou_criar(matricula)

@@ -10,3 +10,6 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SUAP_API_BASE_URL = 'https://suap.ifrn.edu.br'
     ADMIN_MATRICULAS = {'20231041110013'}
+
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')

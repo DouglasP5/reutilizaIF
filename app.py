@@ -2,6 +2,7 @@ from flask import Flask, session
 from config import Config
 from models import db, UsuarioInfo
 from routes import is_admin
+from services.oauth_service import init_oauth
 from routes.auth import auth_bp
 from routes.main import main_bp
 from routes.produtos import produtos_bp
@@ -42,6 +43,7 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
+    init_oauth(app)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
